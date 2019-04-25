@@ -1,0 +1,11 @@
+*.class
+*.jar
+*.war
+*.ear
+.gradle
+*.DS_Store
+*.iml
+*.ipr
+*.iws
+*.xls
+build
