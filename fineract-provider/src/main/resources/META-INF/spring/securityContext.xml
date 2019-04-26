@@ -35,29 +35,29 @@
 		<http create-session="stateless" use-expressions="true" pattern="/api/**"
 			entry-point-ref="basicAuthenticationEntryPoint">
 			<intercept-url pattern="/api/*/authentication" access="permitAll"
-				method="POST" requires-channel="https" />
+				method="POST" requires-channel="http" />
 			<intercept-url pattern="/api/*/self/authentication" access="permitAll"
-				method="POST" requires-channel="https" />
+				method="POST" requires-channel="http" />
 			<intercept-url pattern="/api/*/self/registration" access="permitAll"
-				method="POST" requires-channel="https" />
+				method="POST" requires-channel="http" />
 			<intercept-url pattern="/api/*/self/registration/user" access="permitAll"
-				method="POST" requires-channel="https" />
+				method="POST" requires-channel="http" />
 			<intercept-url pattern="/api/*/twofactor" access="isFullyAuthenticated()"
-						   method="GET" requires-channel="https" />
+						   method="GET" requires-channel="http" />
 			<intercept-url pattern="/api/*/twofactor" access="isFullyAuthenticated()"
-						   method="POST" requires-channel="https" />
+						   method="POST" requires-channel="http" />
 			<intercept-url pattern="/api/*/twofactor/validate" access="isFullyAuthenticated()"
-						   method="POST" requires-channel="https" />
+						   method="POST" requires-channel="http" />
 			<intercept-url pattern="/api/**" access="isFullyAuthenticated() and hasAuthority('TWOFACTOR_AUTHENTICATED')"
-				method="GET" requires-channel="https" />
+				method="GET" requires-channel="http" />
 			<intercept-url pattern="/api/**" access="isFullyAuthenticated() and hasAuthority('TWOFACTOR_AUTHENTICATED')"
-				method="POST" requires-channel="https" />
+				method="POST" requires-channel="http" />
 			<intercept-url pattern="/api/**" access="isFullyAuthenticated() and hasAuthority('TWOFACTOR_AUTHENTICATED')"
-				method="PUT" requires-channel="https" />
+				method="PUT" requires-channel="http" />
 			<intercept-url pattern="/api/**" access="isFullyAuthenticated() and hasAuthority('TWOFACTOR_AUTHENTICATED')"
-				method="DELETE" requires-channel="https" />
+				method="DELETE" requires-channel="http" />
 			<intercept-url pattern="/api/**" access="isFullyAuthenticated() and hasAuthority('TWOFACTOR_AUTHENTICATED')"
-				method="HEAD" requires-channel="https" />
+				method="HEAD" requires-channel="http" />
 	
 			<custom-filter after="SECURITY_CONTEXT_FILTER"
 				ref="basicAuthenticationProcessingFilter" />
@@ -97,23 +97,23 @@
 			access-decision-manager-ref="accessDecisionManager">
 			<anonymous enabled="false" />
 			<intercept-url pattern="/api//v1/**" method="OPTIONS"
-					access="permitAll" requires-channel="https" />
+					access="permitAll" requires-channel="http" />
 			<intercept-url pattern="/api/*/twofactor" access="isFullyAuthenticated()"
-						   method="GET" requires-channel="https" />
+						   method="GET" requires-channel="http" />
 			<intercept-url pattern="/api/*/twofactor" access="isFullyAuthenticated()"
-						   method="POST" requires-channel="https" />
+						   method="POST" requires-channel="http" />
 			<intercept-url pattern="/api/*/twofactor/validate" access="isFullyAuthenticated()"
-						   method="POST" requires-channel="https" />
+						   method="POST" requires-channel="http" />
 			<intercept-url pattern="/api/v1/**" access="isFullyAuthenticated() and hasAuthority('TWOFACTOR_AUTHENTICATED')"
-				method="GET" requires-channel="https" />
+				method="GET" requires-channel="http" />
 			<intercept-url pattern="/api/v1/**" access="isFullyAuthenticated() and hasAuthority('TWOFACTOR_AUTHENTICATED')"
-				method="POST" requires-channel="https" />
+				method="POST" requires-channel="http" />
 			<intercept-url pattern="/api/v1/**" access="isFullyAuthenticated() and hasAuthority('TWOFACTOR_AUTHENTICATED')"
-				method="PUT" requires-channel="https" />
+				method="PUT" requires-channel="http" />
 			<intercept-url pattern="/api/v1/**" access="isFullyAuthenticated() and hasAuthority('TWOFACTOR_AUTHENTICATED')"
-				method="DELETE" requires-channel="https" />
+				method="DELETE" requires-channel="http" />
 			<intercept-url pattern="/api/v1/**" access="isFullyAuthenticated() and hasAuthority('TWOFACTOR_AUTHENTICATED')"
-				method="HEAD" requires-channel="https" />
+				method="HEAD" requires-channel="http" />
 			<custom-filter ref="tenantIdentifierProcessingFilter"
 				position="FIRST" />
 			<custom-filter before="PRE_AUTH_FILTER" ref="resourceServerFilter" />
@@ -125,9 +125,9 @@
 			entry-point-ref="oauthAuthenticationEntryPoint" use-expressions="true"
 			authentication-manager-ref="clientAuthenticationManager">
 			<intercept-url pattern="/api/oauth/token" method="OPTIONS"
-				access="permitAll" requires-channel="https" />
+				access="permitAll" requires-channel="http" />
 			<intercept-url pattern="/api/oauth/token" method="POST"
-				access="isFullyAuthenticated()" requires-channel="https" />
+				access="isFullyAuthenticated()" requires-channel="http" />
 			<anonymous enabled="false" />
 	
 			<custom-filter ref="tenantIdentifierProcessingFilter"
