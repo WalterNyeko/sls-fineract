@@ -127,6 +127,9 @@ rat {
     '**/native/**',
     '**/wrapper/**',
 	'**/build/**',
+	'**/Dockerfile',
+	'**/buildspec.yml',
+	'**/server.xml',
 	
 	//Api Docs 
 	'**/api-docs/*.*',

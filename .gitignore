@@ -8,4 +8,4 @@
 *.ipr
 *.iws
 *.xls
-build
+/build/
