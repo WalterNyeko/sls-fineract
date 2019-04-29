@@ -21,6 +21,7 @@ package org.apache.fineract.infrastructure.core.boot;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 
+import org.apache.fineract.infrastructure.core.filters.ResponseCorsFilter;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,8 +56,8 @@ public class WebXmlOauthConfiguration {
         jerseyServletRegistration.setName("jersey-servlet");
         jerseyServletRegistration.setLoadOnStartup(1);
         jerseyServletRegistration.addInitParameter("com.sun.jersey.api.json.POJOMappingFeature", "true");
-//        jerseyServletRegistration.addInitParameter("com.sun.jersey.spi.container.ContainerResponseFilters",
-//                ResponseCorsFilter.class.getName());
+        jerseyServletRegistration.addInitParameter("com.sun.jersey.spi.container.ContainerResponseFilters",
+                ResponseCorsFilter.class.getName());
         jerseyServletRegistration.addInitParameter("com.sun.jersey.config.feature.DisableWADL", "true");
         // debugging for development:
         // jerseyServletRegistration.addInitParameter("com.sun.jersey.spi.container.ContainerRequestFilters",
