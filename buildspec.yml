@@ -49,7 +49,7 @@ phases:
         #- gradle build 
         - ./gradlew clean war
         - docker images -a 
-        - docker build -t mifosapi .        
+        - docker build -t mifos-api .        
         - echo Building the Docker image...                  
         - docker tag $IMAGE_REPO_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG        
         - docker images -a
