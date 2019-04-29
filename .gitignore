@@ -1,5 +1,4 @@
 *.class
-*.jar
 *.war
 *.ear
 .gradle
@@ -8,4 +7,5 @@
 *.ipr
 *.iws
 *.xls
-build
+/build/
+tomcat*.xml

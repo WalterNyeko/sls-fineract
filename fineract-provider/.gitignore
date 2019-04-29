@@ -8,4 +8,4 @@ repos
 .gradle
 *.log
 .idea
-/gradle
+
