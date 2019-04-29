@@ -9,10 +9,10 @@ env:
       JAVA_HOME: "/usr/lib/jvm/java-8-openjdk-amd64"
       JDK_HOME: "/usr/lib/jvm/java-8-openjdk-amd64"
       JRE_HOME: "/usr/lib/jvm/java-8-openjdk-amd64/jre"
-      GRADLE_VERSION: "2.7"
+      GRADLE_VERSION: "2.10"
       JAVA_HOME: "/usr/lib/jvm/java-8-openjdk-amd64"
       AWS_ACCOUNT_ID : "068278763965"
-      IMAGE_REPO_NAME : "pgs_service"
+      IMAGE_REPO_NAME : "mifos-api"
       IMAGE_TAG : "latest"
   #parameter-store:
      # key: "value"
@@ -47,8 +47,9 @@ phases:
         - echo Build started on `date`
         - printenv
         #- gradle build 
-        - gradle buildDocker
+        - ./gradlew clean war
         - docker images -a 
+        - docker build -t mifosapi .        
         - echo Building the Docker image...                  
         - docker tag $IMAGE_REPO_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG        
         - docker images -a
@@ -60,9 +61,8 @@ phases:
       - echo Pushing the Docker image...
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG  
       - echo Writing image definitions file...
-      - printf '[{"name":"pgs_service","imageUri":"%s"}]' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG > imagedefinitions.json       
+      - printf '[{"name":"mifos-api","imageUri":"%s"}]' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG > imagedefinitions.json       
 artifacts:
-  files:
-    - build/libs/pgs.jar
+  files:    
     - imagedefinitions.json  
 

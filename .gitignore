@@ -9,3 +9,4 @@
 *.iws
 *.xls
 /build/
+tomcat*.xml
