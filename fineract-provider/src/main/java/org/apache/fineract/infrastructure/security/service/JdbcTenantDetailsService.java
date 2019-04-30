@@ -87,7 +87,7 @@ public class JdbcTenantDetailsService implements TenantDetailsService {
             final String schemaServer = rs.getString("schemaServer");
             final String schemaServerPort = rs.getString("schemaServerPort");
             final String schemaUsername = rs.getString("schemaUsername");
-            final String schemaPassword = rs.getString("schemaPassword");
+            final String schemaPassword = System.getenv("FINERACT_PASSWORD") != null ? System.getenv("FINERACT_PASSWORD") :rs.getString("schemaPassword");
             final boolean autoUpdateEnabled = rs.getBoolean("autoUpdate");
             final int initialSize = rs.getInt("initialSize");
             final boolean testOnBorrow = rs.getBoolean("testOnBorrow");

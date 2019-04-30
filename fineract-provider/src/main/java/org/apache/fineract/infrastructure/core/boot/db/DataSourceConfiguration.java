@@ -40,7 +40,11 @@ public class DataSourceConfiguration {
 	
     @Bean
     public DataSourceProperties dataSourceProperties() {
-	return new DataSourceProperties(config.getDriverClassName(), config.getProtocol(), config.getSubProtocol(), config.getPort());
+		DataSourceProperties ds = new DataSourceProperties(config.getDriverClassName(), config.getProtocol(), config.getSubProtocol(), config.getPort());
+		if (System.getenv("FINERACT_PASSWORD") != null) {
+			ds.setPassword(System.getenv("FINERACT_PASSWORD"));
+		}
+	return ds;
     }
 
     @Bean
