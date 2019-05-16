@@ -134,6 +134,9 @@ public class SavingsAccount extends AbstractPersistableCustom<Long> {
     @Column(name = "account_no", length = 20, unique = true, nullable = false)
     protected String accountNumber;
 
+	@Column(name = "nuban_account_number", length = 10, unique = true)
+	protected String nubanAccountNumber;
+
     @Column(name = "external_id", nullable = true)
     protected String externalId;
 
@@ -3066,4 +3069,11 @@ public class SavingsAccount extends AbstractPersistableCustom<Long> {
     		return allowOverdraft;
     }
 
+	public String getNubanAccountNumber() {
+		return nubanAccountNumber;
+	}
+
+	public void setNubanAccountNumber(String nubanAccountNumber) {
+		this.nubanAccountNumber = nubanAccountNumber;
+	}
 }

@@ -76,6 +76,7 @@ public class SavingsAccountData {
     private final Integer daysToDormancy;
     private final Integer daysToEscheat;
     private final BigDecimal savingsAmountOnHold;
+	private String nubanAccountNumber;
 
     // associations
     private final SavingsAccountSummaryData summary;
@@ -524,7 +525,7 @@ public class SavingsAccountData {
                     lockinPeriodFrequencyTypeOptions, withdrawalFeeTypeOptions, transactions, charges, chargeOptions);
         }
 
-        return new SavingsAccountData(account.id, account.accountNo, account.depositType, account.externalId, account.groupId,
+        SavingsAccountData savingsAccountData = new SavingsAccountData(account.id, account.accountNo, account.depositType, account.externalId, account.groupId,
                 account.groupName, account.clientId, account.clientName, account.savingsProductId, account.savingsProductName,
                 account.fieldOfficerId, account.fieldOfficerName, account.status, account.subStatus, account.timeline,
                 account.currency, account.nominalAnnualInterestRate, account.interestCompoundingPeriodType,
@@ -539,6 +540,8 @@ public class SavingsAccountData {
                 account.minOverdraftForInterestCalculation, account.withHoldTax, account.taxGroup, 
                 account.lastActiveTransactionDate, account.isDormancyTrackingActive, account.daysToInactive, 
                 account.daysToDormancy, account.daysToEscheat, account.savingsAmountOnHold);
+		savingsAccountData.setNubanAccountNumber(account.nubanAccountNumber);
+		return savingsAccountData;
     }
 
     public static SavingsAccountData withTemplateOptions(final SavingsAccountData account,
@@ -551,7 +554,7 @@ public class SavingsAccountData {
             final Collection<SavingsAccountTransactionData> transactions, final Collection<SavingsAccountChargeData> charges,
             final Collection<ChargeData> chargeOptions) {
 
-        return new SavingsAccountData(account.id, account.accountNo, account.depositType, account.externalId, account.groupId,
+        SavingsAccountData savingsAccountData = new SavingsAccountData(account.id, account.accountNo, account.depositType, account.externalId, account.groupId,
                 account.groupName, account.clientId, account.clientName, account.savingsProductId, account.savingsProductName,
                 account.fieldOfficerId, account.fieldOfficerName, account.status, account.subStatus, account.timeline,
                 account.currency, account.nominalAnnualInterestRate, account.interestCompoundingPeriodType,
@@ -564,6 +567,8 @@ public class SavingsAccountData {
                 account.minBalanceForInterestCalculation, account.onHoldFunds, account.nominalAnnualInterestRateOverdraft,
                 account.minOverdraftForInterestCalculation, account.withHoldTax, account.taxGroup, account.lastActiveTransactionDate, 
                 account.isDormancyTrackingActive, account.daysToInactive, account.daysToDormancy, account.daysToEscheat, account.savingsAmountOnHold);
+		savingsAccountData.nubanAccountNumber = account.nubanAccountNumber;
+		return savingsAccountData;
     }
 
     public static SavingsAccountData withClientTemplate(final Long clientId, final String clientName, final Long groupId,
@@ -785,4 +790,12 @@ public class SavingsAccountData {
     public void setDatatables(final List<DatatableData> datatables) {
         this.datatables = datatables;
     }
+
+	public String getNubanAccountNumber() {
+		return nubanAccountNumber;
+	}
+
+	public void setNubanAccountNumber(String nubanAccountNumber) {
+		this.nubanAccountNumber = nubanAccountNumber;
+	}
 }
