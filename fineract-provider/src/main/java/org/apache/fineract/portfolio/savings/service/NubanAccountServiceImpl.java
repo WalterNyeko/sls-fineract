@@ -37,6 +37,7 @@ public class NubanAccountServiceImpl implements NubanAccountService {
 	private static final int MAX_NUMBER_OF_ACCOUNTS_TO_GENERATE = 100000;
 	private final NubanAccountPoolRepository nubanAccountPoolRepository;
 	private final SavingsAccountRepository savingsAccountRepository;
+	private static int nubanPrefix = 11;
 
 	@Autowired
 	public NubanAccountServiceImpl(NubanAccountPoolRepository nubanAccountPoolRepository, SavingsAccountRepository savingsAccountRepository) {
@@ -52,15 +53,17 @@ public class NubanAccountServiceImpl implements NubanAccountService {
 			//Generate NUBAN account numbers when available ones start running out
 			String lastSerialNumber = availableAccountNumbers.isEmpty() ? "0" : availableAccountNumbers.get(0).getSavingsAccountNumber();
 			String nextSerialNumber = this.generateNextSerialNumber(lastSerialNumber);
+			String savingsAccountNumber = "00" + nextSerialNumber.substring(2);
 			for (int i = 0; i < MAX_NUMBER_OF_ACCOUNTS_TO_GENERATE; i++) {
 				String nubanAccountNumber = this.generateNubanAccountNumber(nextSerialNumber);
-				SavingsAccount savingsAccount = this.savingsAccountRepository.findAccountByAccountNumber(nextSerialNumber);
+				SavingsAccount savingsAccount = this.savingsAccountRepository.findAccountByAccountNumber(savingsAccountNumber);
 				NubanAccountPool nubanAccountPool = new NubanAccountPool();
 				nubanAccountPool.setNubanAccountNumber(nubanAccountNumber);
-				nubanAccountPool.setSavingsAccountNumber(nextSerialNumber);
+				nubanAccountPool.setSavingsAccountNumber(savingsAccountNumber);
 				nubanAccountPool.setAvailable(savingsAccount == null);
 				this.nubanAccountPoolRepository.save(nubanAccountPool);
 				nextSerialNumber = this.generateNextSerialNumber(nextSerialNumber);
+				savingsAccountNumber = "00" + nextSerialNumber.substring(2);
 				if (savingsAccount != null && StringUtils.isBlank(savingsAccount.getNubanAccountNumber())) {
 					savingsAccount.setNubanAccountNumber(nubanAccountNumber);
 					this.savingsAccountRepository.save(savingsAccount);
@@ -76,6 +79,9 @@ public class NubanAccountServiceImpl implements NubanAccountService {
 		while (nextSerialNumber.length() < maxLength) {
 			nextSerialNumber = "0" + nextSerialNumber;
 		}
+		nextSerialNumber = nubanPrefix + nextSerialNumber.substring(2);
+		nubanPrefix += 1;
+		if (nubanPrefix > 14) nubanPrefix = 11;
 		return nextSerialNumber;
 	}
 
