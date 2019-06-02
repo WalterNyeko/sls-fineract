@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="smv-17.0.0-demo">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/fineract-provider/libs/smv-17.0.0-demo.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

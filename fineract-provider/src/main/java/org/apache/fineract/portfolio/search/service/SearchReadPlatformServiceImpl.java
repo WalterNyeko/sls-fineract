@@ -90,7 +90,9 @@ public class SearchReadPlatformServiceImpl implements SearchReadPlatformService 
             final String union = " union ";
             final String clientMatchSql = " (select 'CLIENT' as entityType, c.id as entityId, c.display_name as entityName, c.external_id as entityExternalId, c.account_no as entityAccountNo "
                     + " , c.office_id as parentId, o.name as parentName, c.mobile_no as entityMobileNo,c.status_enum as entityStatusEnum, null as parentType "
-                    + " from m_client c join m_office o on o.id = c.office_id where o.hierarchy like :hierarchy and (c.account_no like :search or c.display_name like :search or c.external_id like :search or c.mobile_no like :search)) ";
+                    + " from m_client c left join m_office o on o.id = c.office_id left join `ADDITIONAL INFORMATION` a on c.id = a.client_id " +
+                    " left join m_savings_account m ON c.id = m.client_id where o.hierarchy like :hierarchy and (c.account_no like :search or c.display_name like :search or c.external_id like :search or " +
+                    "c.mobile_no like :search or a.`BVN ID` like :search or m.nuban_account_number like :search)) ";
 
             final String loanMatchSql = " (select 'LOAN' as entityType, l.id as entityId, pl.name as entityName, l.external_id as entityExternalId, l.account_no as entityAccountNo "
                     + " , IFNULL(c.id,g.id) as parentId, IFNULL(c.display_name,g.display_name) as parentName, null as entityMobileNo, l.loan_status_id as entityStatusEnum, IF(g.id is null, 'client', 'group') as parentType "
@@ -111,6 +113,7 @@ public class SearchReadPlatformServiceImpl implements SearchReadPlatformService 
                     + " null as entityExternalId, null as entityAccountNo, c.id as parentId, c.display_name as parentName,null as entityMobileNo, c.status_enum as entityStatusEnum, null as parentType "
                     + " from m_client_identifier ci join m_client c on ci.client_id=c.id join m_office o on o.id = c.office_id "
                     + " where o.hierarchy like :hierarchy and ci.document_key like :search ) ";
+
             final String groupMatchSql = " (select IF(g.level_id=1,'CENTER','GROUP') as entityType, g.id as entityId, g.display_name as entityName, g.external_id as entityExternalId, g.account_no as entityAccountNo "
                     + " , g.office_id as parentId, o.name as parentName, null as entityMobileNo, g.status_enum as entityStatusEnum, null as parentType "
                     + " from m_group g join m_office o on o.id = g.office_id where o.hierarchy like :hierarchy and (g.account_no like :search or g.display_name like :search or g.external_id like :search or g.id like :search )) ";
