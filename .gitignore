@@ -6,6 +6,7 @@
 *.iml
 *.ipr
 *.iws
+*.ids
 *.xls
 /build/
 tomcat*.xml

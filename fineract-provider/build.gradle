@@ -111,6 +111,7 @@ rat {
 	'**/*.iml',
     '**/*.ipr',
     '**/*.iws',
+    '**/*.ids',
     '**/*.prpt',
     '**/*.properties',
     '**/*.PROPERTIES',
