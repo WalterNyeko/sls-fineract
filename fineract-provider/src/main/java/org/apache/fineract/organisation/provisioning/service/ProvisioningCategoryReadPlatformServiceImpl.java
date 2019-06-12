@@ -45,7 +45,7 @@ public class ProvisioningCategoryReadPlatformServiceImpl implements Provisioning
     @Override
     public Collection<ProvisioningCategoryData> retrieveAllProvisionCategories() {
         //User is already authenticated by API. So we no need to check again here
-        final String sql = "select " + this.provisionCategoryRowMapper.schema() + " from m_provision_category pc order by pc.id";
+        final String sql = "select " + this.provisionCategoryRowMapper.schema() + " from m_provision_category pc order by pc.ordinal";
         return this.jdbcTemplate.query(sql, this.provisionCategoryRowMapper, new Object[] {});
     }
 
