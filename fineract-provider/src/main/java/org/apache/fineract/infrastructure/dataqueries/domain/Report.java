@@ -280,4 +280,8 @@ public final class Report extends AbstractPersistableCustom<Long> {
 	public Set<ReportParameterUsage> getReportParameterUsages() {
         return this.reportParameterUsages;
     }
+
+	public String getReportSql() {
+		return reportSql;
+	}
 }

@@ -145,7 +145,7 @@ public class AppUserReadPlatformServiceImpl implements AppUserReadPlatformServic
         	for(AppUserClientMapping clientMap : user.getAppUserClientMappings()){
         		Client client = clientMap.getClient();
         		clients.add(ClientData.lookup(client.getId(), client.getDisplayName(), 
-        				client.getOffice().getId(), client.getOffice().getName()));
+        				client.getOffice().getId(), client.getOffice().getName(), client.emailAddress()));
         	}
         	retUser.setClients(clients);
         }

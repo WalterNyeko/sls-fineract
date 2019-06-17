@@ -16,17 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.client.domain;
+package org.apache.fineract.infrastructure.campaigns.externalservice.service;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.apache.fineract.infrastructure.core.api.JsonCommand;
+import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 
-public interface ClientRepository extends JpaRepository<Client, Long>, JpaSpecificationExecutor<Client> {
-    
-    public static final String FIND_CLIENT_BY_ACCOUNT_NUMBER = "select client from Client client where client.accountNumber = :accountNumber";
+public interface ExternalServiceCampaignWritePlatformService {
 
-    @Query(FIND_CLIENT_BY_ACCOUNT_NUMBER)
-    Client getClientByAccountNumber(@Param("accountNumber") String accountNumber);
+    CommandProcessingResult create(JsonCommand command);
+
+    CommandProcessingResult update(Long resourceId, JsonCommand command);
+
+    CommandProcessingResult delete(Long resourceId);
 }

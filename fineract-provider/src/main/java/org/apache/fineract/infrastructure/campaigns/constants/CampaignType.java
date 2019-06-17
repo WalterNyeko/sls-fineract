@@ -21,7 +21,7 @@ package org.apache.fineract.infrastructure.campaigns.constants;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 
 public enum CampaignType {
-    INVALID(0, "campaignType.invalid"), SMS(1, "campaignType.sms"), NOTIFICATION(2, "campaignType.notification");
+    INVALID(0, "campaignType.invalid"), SMS(1, "campaignType.sms"), NOTIFICATION(2, "campaignType.notification"), EMAIL(3, "campaignType.notification");
 
     private Integer value;
     private String code;

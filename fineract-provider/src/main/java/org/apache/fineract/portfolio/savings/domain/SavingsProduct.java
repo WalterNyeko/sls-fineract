@@ -751,4 +751,7 @@ public class SavingsProduct extends AbstractPersistableCustom<Long> {
 		return this.daysToEscheat;
 	}
 
+	public String getName() {
+		return name;
+	}
 }

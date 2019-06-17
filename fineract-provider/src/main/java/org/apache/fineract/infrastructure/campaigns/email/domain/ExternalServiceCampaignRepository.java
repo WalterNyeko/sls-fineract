@@ -16,17 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.client.domain;
 
+package org.apache.fineract.infrastructure.campaigns.email.domain;
+
+import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaign;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ClientRepository extends JpaRepository<Client, Long>, JpaSpecificationExecutor<Client> {
-    
-    public static final String FIND_CLIENT_BY_ACCOUNT_NUMBER = "select client from Client client where client.accountNumber = :accountNumber";
+import java.util.List;
 
-    @Query(FIND_CLIENT_BY_ACCOUNT_NUMBER)
-    Client getClientByAccountNumber(@Param("accountNumber") String accountNumber);
+
+public interface ExternalServiceCampaignRepository extends JpaRepository<ExternalServiceCampaign, Long>, JpaSpecificationExecutor<ExternalServiceCampaign> {
+
+	@Query("SELECT campaign FROM ExternalServiceCampaign campaign WHERE campaign.businessRule.reportName = :reportName")
+	List<ExternalServiceCampaign> findActiveExternalServiceCampaigns(@Param("reportName") final String reportName);
+
 }

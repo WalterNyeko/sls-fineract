@@ -94,6 +94,10 @@ public class Staff extends AbstractPersistableCustom<Long> {
         final String firstnameParamName = "firstname";
         final String firstname = command.stringValueOfParameterNamed(firstnameParamName);
 
+        final String emailAddressParamName = "emailAddress";
+        final String emailAddress = command.stringValueOfParameterNamed(emailAddressParamName);
+
+
         final String lastnameParamName = "lastname";
         final String lastname = command.stringValueOfParameterNamed(lastnameParamName);
 
@@ -116,7 +120,7 @@ public class Staff extends AbstractPersistableCustom<Long> {
             joiningDate = command.localDateValueOfParameterNamed(joiningDateParamName);
         }
 
-        return new Staff(staffOffice, firstname, lastname, externalId, mobileNo, isLoanOfficer, isActive, joiningDate);
+        return new Staff(staffOffice, firstname, lastname, externalId, mobileNo, isLoanOfficer, isActive, joiningDate, emailAddress);
     }
 
     protected Staff() {
@@ -124,7 +128,7 @@ public class Staff extends AbstractPersistableCustom<Long> {
     }
 
     private Staff(final Office staffOffice, final String firstname, final String lastname, final String externalId, final String mobileNo,
-            final boolean isLoanOfficer, final Boolean isActive, final LocalDate joiningDate) {
+            final boolean isLoanOfficer, final Boolean isActive, final LocalDate joiningDate, final String emailAddress) {
         this.office = staffOffice;
         this.firstname = StringUtils.defaultIfEmpty(firstname, null);
         this.lastname = StringUtils.defaultIfEmpty(lastname, null);
@@ -136,6 +140,7 @@ public class Staff extends AbstractPersistableCustom<Long> {
         if (joiningDate != null) {
             this.joiningDate = joiningDate.toDateTimeAtStartOfDay().toDate();
         }
+        this.emailAddress = StringUtils.defaultIfEmpty(emailAddress, null);
     }
 
     public EnumOptionData organisationalRoleData() {
@@ -167,6 +172,13 @@ public class Staff extends AbstractPersistableCustom<Long> {
             actualChanges.put(firstnameParamName, newValue);
             this.firstname = newValue;
             firstnameChanged = true;
+        }
+
+        final String emailAddressParamName = "emailAddress";
+        if (command.isChangeInStringParameterNamed(emailAddressParamName, this.emailAddress)) {
+            final String newValue = command.stringValueOfParameterNamed(emailAddressParamName);
+            actualChanges.put(emailAddressParamName, newValue);
+            this.emailAddress = newValue;
         }
 
         boolean lastnameChanged = false;

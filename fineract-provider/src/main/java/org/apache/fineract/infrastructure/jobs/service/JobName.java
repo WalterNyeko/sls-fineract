@@ -50,7 +50,8 @@ public enum JobName {
 	SEND_MESSAGES_TO_EMAIL_GATEWAY("Send messages to Email gateway"),
     UPDATE_EMAIL_OUTBOUND_WITH_CAMPAIGN_MESSAGE("Update Email Outbound with campaign message"),
     EXECUTE_EMAIL("Execute Email"),
-	GENERATE_NUBAN_ACCOUNT_NUMBERS("Generate NUBAN Account Numbers");
+	GENERATE_NUBAN_ACCOUNT_NUMBERS("Generate NUBAN Account Numbers"),
+	EXECUTE_SCHEDULED_EXTERNAL_SERVICE_CAMPAIGNS("Execute Scheduled External Service Campaigns");
 
     private final String name;
 

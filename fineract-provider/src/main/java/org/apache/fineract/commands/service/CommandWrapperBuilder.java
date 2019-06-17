@@ -3132,4 +3132,28 @@ public class CommandWrapperBuilder {
         this.href = "/twofactor/configure";
         return this;
     }
+
+	public CommandWrapperBuilder createExternalServiceCampaign() {
+		this.actionName = "CREATE";
+		this.entityName = "EXTERNAL_SERVICE_CAMPAIGN";
+		this.entityId = null;
+		this.href = "/externalservice/campaign";
+		return this;
+	}
+
+	public CommandWrapperBuilder updateExternalServiceCampaign(final Long resourceId) {
+		this.actionName = "UPDATE";
+		this.entityName = "EXTERNAL_SERVICE_CAMPAIGN";
+		this.entityId = resourceId;
+		this.href = "/externalservice/campaign" + resourceId;
+		return this;
+	}
+
+	public CommandWrapperBuilder deleteExtenalServiceCampaign(final Long resourceId) {
+		this.actionName = "DELETE";
+		this.entityName = "EXTERNAL_SERVICE_CAMPAIGN";
+		this.entityId = resourceId;
+		this.href = "/externalservice/campaign" + resourceId;
+		return this;
+	}
 }

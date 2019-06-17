@@ -20,6 +20,9 @@ package org.apache.fineract.infrastructure.campaigns.email.service;
 
 import org.apache.fineract.infrastructure.campaigns.email.data.EmailBusinessRulesData;
 import org.apache.fineract.infrastructure.campaigns.email.data.EmailCampaignData;
+import org.apache.fineract.infrastructure.campaigns.email.data.EmailRecipientsData;
+import org.apache.fineract.infrastructure.core.service.Page;
+import org.apache.fineract.infrastructure.core.service.SearchParameters;
 
 import java.util.Collection;
 
@@ -27,12 +30,21 @@ public interface EmailCampaignReadPlatformService {
 
     Collection<EmailBusinessRulesData> retrieveAll();
 
-    EmailBusinessRulesData retrieveOneTemplate(Long resourceId);
+	Collection<EmailBusinessRulesData> retrieveAllBySearchType(String searchType);
+
+    EmailBusinessRulesData retrieveOneTemplate(Long resourceId, String searchType);
 
     EmailCampaignData retrieveOne(Long resourceId);
 
     Collection<EmailCampaignData> retrieveAllCampaign();
+    Page<EmailCampaignData> retrieveAllCampaignPage(SearchParameters searchParameters);
 
     Collection<EmailCampaignData> retrieveAllScheduleActiveCampaign();
+
+    EmailCampaignData retrieveTemplate();
+
+    EmailRecipientsData retrieveClientsRecipients();
+
+    EmailRecipientsData retrieveOfficersRecipients();
 
 }

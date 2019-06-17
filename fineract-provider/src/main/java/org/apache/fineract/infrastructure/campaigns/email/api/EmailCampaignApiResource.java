@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
+import org.apache.fineract.infrastructure.campaigns.email.data.EmailRecipientsData;
 import org.apache.fineract.infrastructure.core.api.ApiRequestParameterHelper;
 import org.apache.fineract.infrastructure.core.api.JsonQuery;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
@@ -69,6 +70,7 @@ public class EmailCampaignApiResource {
     private final PlatformSecurityContext context;
 
     private final DefaultToApiJsonSerializer<EmailBusinessRulesData> toApiJsonSerializer;
+    private final DefaultToApiJsonSerializer<EmailRecipientsData> emailRecipientsDataDefaultToApiJsonSerializer;
 
     private final ApiRequestParameterHelper apiRequestParameterHelper;
 
@@ -88,7 +90,8 @@ public class EmailCampaignApiResource {
                                   final EmailCampaignReadPlatformService emailCampaignReadPlatformService, final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService,
                                   final DefaultToApiJsonSerializer<EmailCampaignData> emailCampaignDataDefaultToApiJsonSerializer,
                                   final FromJsonHelper fromJsonHelper, final EmailCampaignWritePlatformService emailCampaignWritePlatformService,
-                                  final DefaultToApiJsonSerializer<PreviewCampaignMessage> previewCampaignMessageDefaultToApiJsonSerializer) {
+                                  final DefaultToApiJsonSerializer<PreviewCampaignMessage> previewCampaignMessageDefaultToApiJsonSerializer,
+                                    final DefaultToApiJsonSerializer<EmailRecipientsData> emailRecipientsDataDefaultToApiJsonSerializer) {
         this.context = context;
         this.toApiJsonSerializer = toApiJsonSerializer;
         this.apiRequestParameterHelper = apiRequestParameterHelper;
@@ -98,6 +101,7 @@ public class EmailCampaignApiResource {
         this.fromJsonHelper = fromJsonHelper;
         this.emailCampaignWritePlatformService = emailCampaignWritePlatformService;
         this.previewCampaignMessageDefaultToApiJsonSerializer = previewCampaignMessageDefaultToApiJsonSerializer;
+        this.emailRecipientsDataDefaultToApiJsonSerializer = emailRecipientsDataDefaultToApiJsonSerializer;
     }
 
 
@@ -115,11 +119,15 @@ public class EmailCampaignApiResource {
 
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
-    public String retrieveAllCampaign(@Context final UriInfo uriInfo) {
+    public String retrieveAllCampaign(@QueryParam("sqlSearch") final String sqlSearch,
+                                      @QueryParam("offset") final Integer offset, @QueryParam("limit") final Integer limit,
+                                      @QueryParam("orderBy") final String orderBy, @QueryParam("sortOrder") final String sortOrder,
+                                      @Context final UriInfo uriInfo) {
 
         this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
 
-        final Collection<EmailCampaignData> emailCampaignDataCollection = this.emailCampaignReadPlatformService.retrieveAllCampaign();
+        final SearchParameters searchParameters = SearchParameters.forEmailCampaign(sqlSearch, offset, limit, orderBy, sortOrder);
+        final Page<EmailCampaignData> emailCampaignDataCollection = this.emailCampaignReadPlatformService.retrieveAllCampaignPage(searchParameters);
 
         final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
         return this.emailCampaignDataDefaultToApiJsonSerializer.serialize(settings,emailCampaignDataCollection);
@@ -195,10 +203,10 @@ public class EmailCampaignApiResource {
     public String template(@Context final UriInfo uriInfo){
         this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
 
-        final Collection<EmailBusinessRulesData>  emailBusinessRulesDataCollection = this.emailCampaignReadPlatformService.retrieveAll();
+        final EmailCampaignData emailCampaignData = this.emailCampaignReadPlatformService.retrieveTemplate();
 
         final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
-        return this.toApiJsonSerializer.serialize(settings,emailBusinessRulesDataCollection);
+        return this.emailCampaignDataDefaultToApiJsonSerializer.serialize(settings,emailCampaignData);
     }
 
     @GET
@@ -206,9 +214,22 @@ public class EmailCampaignApiResource {
     public String retrieveOneTemplate(@PathParam("resourceId") final Long resourceId,@Context final UriInfo uriInfo){
         this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
 
-        final EmailBusinessRulesData emailBusinessRulesData = this.emailCampaignReadPlatformService.retrieveOneTemplate(resourceId);
+        final EmailBusinessRulesData emailBusinessRulesData = this.emailCampaignReadPlatformService.retrieveOneTemplate(resourceId, "Email");
         final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
         return this.toApiJsonSerializer.serialize(settings,emailBusinessRulesData);
+
+    }
+
+    @GET
+    @Path("recipients")
+    public String retrieveRecipients(@QueryParam("command") final String commandParam){
+        EmailRecipientsData emailRecipientsData = null;
+        if (is(commandParam, "clients")) {
+            emailRecipientsData = this.emailCampaignReadPlatformService.retrieveClientsRecipients();
+        } else if (is(commandParam, "officers")) {
+            emailRecipientsData = this.emailCampaignReadPlatformService.retrieveOfficersRecipients();
+        }
+        return this.emailRecipientsDataDefaultToApiJsonSerializer.serialize(emailRecipientsData);
 
     }
 

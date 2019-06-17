@@ -41,7 +41,7 @@ public class EmailCampaignValidator {
 
     public static final String RESOURCE_NAME = "email";
     public static final String campaignName  = "campaignName";
-    public static final String campaignType = "campaignType";
+    public static final String campaignType = "triggerType";
     public static final String businessRuleId = "businessRuleId";
     public static final String stretchyReportId = "stretchyReportId";
     public static final String stretchyReportParamMap = "stretchyReportParamMap";
@@ -68,7 +68,7 @@ public class EmailCampaignValidator {
             emailSubject,stretchyReportId,stretchyReportParamMap,emailAttachmentFileFormatId));
 
     public static final Set<String> supportedParamsForUpdate = new HashSet<>(Arrays.asList(campaignName, campaignType,localeParamName,dateFormatParamName,
-            businessRuleId,paramValue,emailMessage,recurrenceStartDate,activationDateParamName,recurrenceParamName));
+            businessRuleId,paramValue, emailSubject,emailMessage,recurrenceStartDate,activationDateParamName,recurrenceParamName));
 
     public static final Set<String> ACTIVATION_REQUEST_DATA_PARAMETERS = new HashSet<String>(Arrays.asList(localeParamName,
             dateFormatParamName, activationDateParamName));
@@ -166,6 +166,9 @@ public class EmailCampaignValidator {
 
         final Long runReportId = this.fromApiJsonHelper.extractLongNamed(EmailCampaignValidator.businessRuleId,element);
         baseDataValidator.reset().parameter(EmailCampaignValidator.businessRuleId).value(runReportId).notNull().integerGreaterThanZero();
+
+        final String subject = this.fromApiJsonHelper.extractStringNamed(EmailCampaignValidator.emailSubject, element);
+        baseDataValidator.reset().parameter(EmailCampaignValidator.emailSubject).value(subject).notBlank().notExceedingLengthOf(100);
 
         final String message = this.fromApiJsonHelper.extractStringNamed(EmailCampaignValidator.emailMessage, element);
         baseDataValidator.reset().parameter(EmailCampaignValidator.emailMessage).value(message).notBlank().notExceedingLengthOf(480);

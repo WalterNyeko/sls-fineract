@@ -16,17 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.client.domain;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+package org.apache.fineract.infrastructure.campaigns.externalservice.service;
 
-public interface ClientRepository extends JpaRepository<Client, Long>, JpaSpecificationExecutor<Client> {
-    
-    public static final String FIND_CLIENT_BY_ACCOUNT_NUMBER = "select client from Client client where client.accountNumber = :accountNumber";
+import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignData;
 
-    @Query(FIND_CLIENT_BY_ACCOUNT_NUMBER)
-    Client getClientByAccountNumber(@Param("accountNumber") String accountNumber);
+import java.util.List;
+
+public interface ExternalServiceCampaignReadPlatformService {
+
+	List<ExternalServiceCampaignData> retrieveAll();
+
+	ExternalServiceCampaignData retrieveOne(Long id);
+
+	ExternalServiceCampaignData retrieveTemplate();
+
+	ExternalServiceCampaignData retrieveWithTemplate(Long id);
+
 }

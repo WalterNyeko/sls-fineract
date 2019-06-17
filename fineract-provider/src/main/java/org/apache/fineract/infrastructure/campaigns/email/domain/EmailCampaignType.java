@@ -20,7 +20,8 @@ package org.apache.fineract.infrastructure.campaigns.email.domain;
 
 public enum EmailCampaignType {
     DIRECT(1,"emailCampaignStatusType.direct"),
-    SCHEDULE(2,"emailCampaignStatusType.schedule");
+    SCHEDULE(2,"emailCampaignStatusType.schedule"),
+    TRIGGERED(3, "emailCampaignStatusType.schedule");
 
     private Integer value;
     private String code;
@@ -47,6 +48,9 @@ public enum EmailCampaignType {
             case 2:
                 type = SCHEDULE;
                 break;
+            case 3:
+                type = TRIGGERED;
+                break;
         }
         return type;
     }
@@ -57,5 +61,9 @@ public enum EmailCampaignType {
 
     public boolean isSchedule(){
         return this.value.equals(EmailCampaignType.SCHEDULE.getValue());
+    }
+
+    public boolean isTriggered(){
+        return this.value.equals(EmailCampaignType.TRIGGERED.getValue());
     }
 }

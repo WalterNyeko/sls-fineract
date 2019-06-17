@@ -22,6 +22,9 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 
+import java.util.Collection;
+import java.util.List;
+
 public class EmailCampaignData {
 
     @SuppressWarnings("unused")
@@ -58,11 +61,19 @@ public class EmailCampaignData {
 
     private final String recurrence;
 
+    private final Collection<EnumOptionData> triggerTypeOptions;
+
+    private final Collection<EnumOptionData> sendToOptions;
+
+    private final Collection<EmailBusinessRulesData> businessRulesOptions;
+
     private EmailCampaignData(final Long id, final String campaignName, final Integer campaignType, final Long businessRuleId,
                               final String paramValue, final EnumOptionData campaignStatus, final String emailSubject,
                               final String message, final String emailAttachmentFileFormat, final Long stretchyReportId,
                               final String stretchyReportParamMap, final DateTime nextTriggerDate, final LocalDate lastTriggerDate,
-                              final EmailCampaignTimeLine emailCampaignTimeLine, final DateTime recurrenceStartDate, final String recurrence) {
+                              final EmailCampaignTimeLine emailCampaignTimeLine, final DateTime recurrenceStartDate, final String recurrence,
+                              Collection<EmailBusinessRulesData> emailBusinessRulesData, Collection<EnumOptionData> triggerTypeOptions,
+                              Collection<EnumOptionData> sendToOptions) {
         this.id = id;
         this.campaignName = campaignName;
         this.campaignType = campaignType;
@@ -87,6 +98,9 @@ public class EmailCampaignData {
         this.emailCampaignTimeLine =emailCampaignTimeLine;
         this.recurrenceStartDate = recurrenceStartDate;
         this.recurrence  = recurrence;
+        this.businessRulesOptions = emailBusinessRulesData;
+        this.triggerTypeOptions = triggerTypeOptions;
+        this.sendToOptions = sendToOptions;
     }
 
     public static EmailCampaignData instance(final Long id, final String campaignName, final Integer campaignType, final Long runReportId,
@@ -96,7 +110,30 @@ public class EmailCampaignData {
                                              final EmailCampaignTimeLine emailCampaignTimeLine,
                                              final DateTime recurrenceStartDate, final String recurrence){
         return new EmailCampaignData(id,campaignName,campaignType,runReportId,paramValue,
-                campaignStatus,emailSubject,message,emailAttachmentFileFormat,stretchyReportId,stretchyReportParamMap,nextTriggerDate,lastTriggerDate,emailCampaignTimeLine,recurrenceStartDate,recurrence);
+                campaignStatus,emailSubject,message,emailAttachmentFileFormat,stretchyReportId,stretchyReportParamMap,nextTriggerDate,lastTriggerDate,emailCampaignTimeLine,recurrenceStartDate,recurrence, null, null, null);
+    }
+
+    public static EmailCampaignData template(List<EmailBusinessRulesData> retrieveBusinessRules, List<EnumOptionData> campaignTriggerTypeOptions, List<EnumOptionData> sendToOptions) {
+        Long id = null;
+        String campaignName = null;
+        Integer campaignType = null;
+        Long businessRuleId = null;
+        String paramValue = null;
+        EnumOptionData campaignStatus = null;
+        String emailSubject = null;
+        String emailMessage = null;
+        String emailAttachmentFileFormat = null;
+        Long stretchyReportId = null;
+        String stretchyReportParamMap = null;
+        DateTime nextTriggerDate = null;
+        LocalDate lastTriggerDate = null;
+        EmailCampaignTimeLine emailCampaignTimeLine = null;
+        DateTime recurrenceStartDate = null;
+        String recurrence = null;
+        return new EmailCampaignData(id, campaignName, campaignType, businessRuleId, paramValue, campaignStatus,
+                                     emailSubject, emailMessage, emailAttachmentFileFormat, stretchyReportId, stretchyReportParamMap,
+                                     nextTriggerDate, lastTriggerDate, emailCampaignTimeLine, recurrenceStartDate, recurrence, retrieveBusinessRules, campaignTriggerTypeOptions,
+                                     sendToOptions);
     }
 
 

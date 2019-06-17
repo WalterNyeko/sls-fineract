@@ -18,11 +18,14 @@
  */
 package org.apache.fineract.infrastructure.campaigns.email.service;
 
+import org.apache.fineract.infrastructure.campaigns.email.domain.EmailCampaign;
 import org.apache.fineract.infrastructure.core.api.JsonCommand;
 import org.apache.fineract.infrastructure.core.api.JsonQuery;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.jobs.exception.JobExecutionException;
 import org.apache.fineract.infrastructure.campaigns.email.data.PreviewCampaignMessage;
+
+import java.util.HashMap;
 
 public interface EmailCampaignWritePlatformService {
 
@@ -43,5 +46,7 @@ public interface EmailCampaignWritePlatformService {
     PreviewCampaignMessage previewMessage(JsonQuery query);
 
     void sendEmailMessage() throws JobExecutionException;
+
+    String handleMessageTemplate(final String message, EmailCampaign emailCampaign, HashMap<String, String> queryParamForRunReport);
 
 }

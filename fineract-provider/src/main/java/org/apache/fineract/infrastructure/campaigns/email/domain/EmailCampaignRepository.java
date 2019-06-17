@@ -20,6 +20,13 @@ package org.apache.fineract.infrastructure.campaigns.email.domain;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface EmailCampaignRepository extends JpaRepository<EmailCampaign, Long>, JpaSpecificationExecutor<EmailCampaign> {
+
+  @Query("SELECT campaign FROM EmailCampaign campaign WHERE campaign.paramValue LIKE :reportName AND campaign.campaignType =:triggerType AND campaign.status=300")
+  List<EmailCampaign> findActiveEmailCampaigns(@Param("reportName") final String reportName, @Param("triggerType") final Integer triggerType);
 }

@@ -16,17 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.client.domain;
+package org.apache.fineract.infrastructure.campaigns.email.data;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 
-public interface ClientRepository extends JpaRepository<Client, Long>, JpaSpecificationExecutor<Client> {
-    
-    public static final String FIND_CLIENT_BY_ACCOUNT_NUMBER = "select client from Client client where client.accountNumber = :accountNumber";
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-    @Query(FIND_CLIENT_BY_ACCOUNT_NUMBER)
-    Client getClientByAccountNumber(@Param("accountNumber") String accountNumber);
+public class EmailRecipientsData {
+  private final Collection<EnumOptionData> recipients;
+
+  public EmailRecipientsData(Collection<EnumOptionData> recipients) {
+    this.recipients = recipients;
+  }
+
+
+  public static EmailRecipientsData instance(Collection<EnumOptionData> recipients) {
+    List<EnumOptionData> recipientOptions = new ArrayList<>();
+    if(recipients != null && !recipients.isEmpty()){
+      recipientOptions.addAll(recipients);
+      recipientOptions.add(new EnumOptionData(-1L, "ALL", "ALL"));
+    }
+
+    return new EmailRecipientsData(recipientOptions);
+  }
 }

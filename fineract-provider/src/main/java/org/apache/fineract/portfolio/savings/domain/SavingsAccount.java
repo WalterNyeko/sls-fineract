@@ -3076,4 +3076,8 @@ public class SavingsAccount extends AbstractPersistableCustom<Long> {
 	public void setNubanAccountNumber(String nubanAccountNumber) {
 		this.nubanAccountNumber = nubanAccountNumber;
 	}
+
+	public SavingsProduct getProduct() {
+		return product;
+	}
 }

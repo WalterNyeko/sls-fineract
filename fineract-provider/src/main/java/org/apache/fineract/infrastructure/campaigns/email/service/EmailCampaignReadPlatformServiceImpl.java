@@ -18,6 +18,13 @@
  */
 package org.apache.fineract.infrastructure.campaigns.email.service;
 
+import org.apache.fineract.infrastructure.campaigns.constants.CampaignType;
+import org.apache.fineract.infrastructure.campaigns.email.constants.EmailCampaignEnumerations;
+import org.apache.fineract.infrastructure.campaigns.email.constants.EmailCampaignSendTo;
+import org.apache.fineract.infrastructure.campaigns.email.data.EmailRecipientsData;
+import org.apache.fineract.infrastructure.core.service.Page;
+import org.apache.fineract.infrastructure.core.service.PaginationHelper;
+import org.apache.fineract.infrastructure.core.service.SearchParameters;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
@@ -54,12 +61,16 @@ public class EmailCampaignReadPlatformServiceImpl implements EmailCampaignReadPl
     private final BusinessRuleMapper businessRuleMapper;
 
     private final EmailCampaignMapper emailCampaignMapper;
+    private final EmailCampaignRecipientsMapper emailCampaignRecipientsMapper;
+
+    private final PaginationHelper<EmailCampaignData> paginationHelper = new PaginationHelper<>();
 
     @Autowired
     public EmailCampaignReadPlatformServiceImpl(final RoutingDataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.businessRuleMapper = new BusinessRuleMapper();
         this.emailCampaignMapper = new EmailCampaignMapper();
+        this.emailCampaignRecipientsMapper = new EmailCampaignRecipientsMapper();
     }
 
 
@@ -236,9 +247,15 @@ public class EmailCampaignReadPlatformServiceImpl implements EmailCampaignReadPl
         return this.jdbcTemplate.query(sql, this.businessRuleMapper, searchType);
     }
 
+	@Override
+	public Collection<EmailBusinessRulesData> retrieveAllBySearchType(String searchType) {
+		final String sql = "select " + this.businessRuleMapper.schema() + " where sr.report_type = ?";
+
+		return this.jdbcTemplate.query(sql, this.businessRuleMapper, searchType);
+	}
+
     @Override
-    public EmailBusinessRulesData retrieveOneTemplate(Long resourceId) {
-        final String searchType = "Email";
+    public EmailBusinessRulesData retrieveOneTemplate(Long resourceId, String searchType) {
 
         final String sql = "select " + this.businessRuleMapper.schema() + " where sr.report_type = ? and sr.id = ?";
 
@@ -280,6 +297,68 @@ public class EmailCampaignReadPlatformServiceImpl implements EmailCampaignReadPl
         return this.jdbcTemplate.query(sql,this.emailCampaignMapper, statusEnum,scheduleCampaignType,visible);
     }
 
+    public Page<EmailCampaignData> retrieveAllCampaignPage(final SearchParameters searchParameters) {
+        final Integer visible = 1;
+        final StringBuilder sqlBuilder = new StringBuilder(200);
+        sqlBuilder.append("select SQL_CALC_FOUND_ROWS ");
+        sqlBuilder.append(this.emailCampaignMapper.schema() + " where ec.is_visible = ?");
+        if (searchParameters.isLimited()) {
+            sqlBuilder.append(" limit ").append(searchParameters.getLimit());
+            if (searchParameters.isOffset()) {
+                sqlBuilder.append(" offset ").append(searchParameters.getOffset());
+            }
+        }
+        final String sqlCountRows = "SELECT FOUND_ROWS()";
+        return this.paginationHelper.fetchPage(jdbcTemplate, sqlCountRows, sqlBuilder.toString(), new Object[] { visible },
+                                               this.emailCampaignMapper);
+    }
 
+    @Override
+    public EmailCampaignData retrieveTemplate() {
+        final String searchType = CampaignType.EMAIL.name();
+        final String sql = "select " + this.businessRuleMapper.schema() + " where sr.report_type = ?";
+        List<EmailBusinessRulesData> retrieveBusinessRules = this.jdbcTemplate.query(sql, this.businessRuleMapper, searchType);
+        List<EnumOptionData> campaignTriggerTypeOptions = EmailCampaignEnumerations.emailcampaignTriggerTypes();
+        List<EnumOptionData> sendToOptions = EmailCampaignEnumerations.emailcampaignSentToValues();
+        return EmailCampaignData.template(retrieveBusinessRules, campaignTriggerTypeOptions, sendToOptions);
+    }
+
+    @Override
+    public EmailRecipientsData retrieveClientsRecipients() {
+        final String sql = "select " + this.emailCampaignRecipientsMapper.schema() + " from m_client opt ";
+        Collection<EnumOptionData> recipients = this.jdbcTemplate.query(sql, this.emailCampaignRecipientsMapper);
+        return EmailRecipientsData.instance(recipients);
+    }
+
+    @Override
+    public EmailRecipientsData retrieveOfficersRecipients() {
+        final String sql = "select " + this.emailCampaignRecipientsMapper.schema() + " from m_staff opt where is_loan_officer=1";
+        Collection<EnumOptionData> recipients = this.jdbcTemplate.query(sql, this.emailCampaignRecipientsMapper);
+        return EmailRecipientsData.instance(recipients);
+    }
+
+    private static final class EmailCampaignRecipientsMapper implements RowMapper<EnumOptionData>{
+
+        final String schema;
+
+        private EmailCampaignRecipientsMapper() {
+            final StringBuilder sql = new StringBuilder(200);
+            sql.append("opt.id as id, ");
+            sql.append("opt.display_name as displayName ");
+
+            this.schema = sql.toString();
+        }
+        public String schema() {
+            return this.schema;
+        }
+
+        @Override
+        public EnumOptionData mapRow(ResultSet rs, int rowNum) throws SQLException {
+            final Long id = JdbcSupport.getLong(rs, "id");
+            final String displayName = rs.getString("displayName");
+
+            return new EnumOptionData(id, EmailCampaignSendTo.CLIENTS.getCode(), displayName);
+        }
+    }
 
 }
