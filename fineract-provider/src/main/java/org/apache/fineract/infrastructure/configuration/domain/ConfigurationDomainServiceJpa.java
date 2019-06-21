@@ -324,7 +324,29 @@ public class ConfigurationDomainServiceJpa implements ConfigurationDomainService
         return value;
     }
 
-    private GlobalConfigurationPropertyData getGlobalConfigurationPropertyData(final String propertyName) {
+	@Override
+	public Integer getExternalServiceCampaignMaxRetries() {
+		final String propertyName = "external-service-campaign-max-retries";
+		final GlobalConfigurationPropertyData property = getGlobalConfigurationPropertyData(propertyName);
+		int defaultValue = 1;
+		int value = property.getValue().intValue();
+		if(value < 1)
+			return defaultValue;
+		return value;
+	}
+
+	@Override
+	public Long getExternalServiceCampaignRetryDelay() {
+		final String propertyName = "external-service-campaign-retry-delay";
+		final GlobalConfigurationPropertyData property = getGlobalConfigurationPropertyData(propertyName);
+		long defaultValue = 0;
+		long value = property.getValue().longValue();
+		if(value < 1)
+			return defaultValue;
+		return value;
+	}
+
+	private GlobalConfigurationPropertyData getGlobalConfigurationPropertyData(final String propertyName) {
         String identifier = ThreadLocalContextUtil.getTenant().getTenantIdentifier();
         String key = identifier + "_" + propertyName;
         if (!configurations.containsKey(key)) {

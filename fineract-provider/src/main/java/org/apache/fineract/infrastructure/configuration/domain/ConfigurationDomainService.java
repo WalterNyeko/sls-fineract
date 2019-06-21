@@ -93,4 +93,8 @@ public interface ConfigurationDomainService {
     Integer retrieveOTPCharacterLength();
 
     Integer retrieveOTPLiveTime();
+
+	Integer getExternalServiceCampaignMaxRetries();
+
+	Long getExternalServiceCampaignRetryDelay();
 }

@@ -33,6 +33,9 @@ public class SavingsAccountTransactionReportData {
 	private BigDecimal accountBalance;
 	private String clientDisplayName;
 	private String clientFirstName;
+	private String clientEmail;
+	private String clientPhoneNumber;
+	private String savingsProductName;
 
 	public Long getTransactionId() {
 		return transactionId;
@@ -96,5 +99,29 @@ public class SavingsAccountTransactionReportData {
 
 	public void setClientFirstName(String clientFirstName) {
 		this.clientFirstName = clientFirstName;
+	}
+
+	public String getClientEmail() {
+		return clientEmail;
+	}
+
+	public void setClientEmail(String clientEmail) {
+		this.clientEmail = clientEmail;
+	}
+
+	public String getClientPhoneNumber() {
+		return clientPhoneNumber;
+	}
+
+	public void setClientPhoneNumber(String clientPhoneNumber) {
+		this.clientPhoneNumber = clientPhoneNumber;
+	}
+
+	public String getSavingsProductName() {
+		return savingsProductName;
+	}
+
+	public void setSavingsProductName(String savingsProductName) {
+		this.savingsProductName = savingsProductName;
 	}
 }

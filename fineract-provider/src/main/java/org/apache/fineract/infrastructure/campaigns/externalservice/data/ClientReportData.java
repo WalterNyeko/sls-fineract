@@ -26,6 +26,8 @@ public class ClientReportData {
 	private String clientDisplayName;
 	private String clientFirstName;
 	private LocalDate dateOfBirth;
+	private String clientPhoneNumber;
+	private String clientEmail;
 
 	public String getClientDisplayName() {
 		return clientDisplayName;
@@ -49,5 +51,21 @@ public class ClientReportData {
 
 	public void setDateOfBirth(LocalDate dateOfBirth) {
 		this.dateOfBirth = dateOfBirth;
+	}
+
+	public String getClientPhoneNumber() {
+		return clientPhoneNumber;
+	}
+
+	public void setClientPhoneNumber(String clientPhoneNumber) {
+		this.clientPhoneNumber = clientPhoneNumber;
+	}
+
+	public String getClientEmail() {
+		return clientEmail;
+	}
+
+	public void setClientEmail(String clientEmail) {
+		this.clientEmail = clientEmail;
 	}
 }

@@ -43,5 +43,9 @@ public final class ExternalServiceCampaignConstants {
 	public static final String OUTSTANDING_BALANCE = "{{outstandingBalance}}";
 	public static final String TRANSACTION_AMOUNT = "{{transactionAmount}}";
 	public static final String DATE_OF_BIRTH = "{{dateOfBirth}}";
+	public static final String LOAN_PRODUCT_NAME = "{{loan_product_name}}";
+	public static final String SAVINGS_PRODUCT_NAME = "{{savings_product_name}}";
+	public static final String CLIENT_EMAIL = "{{email_address}}";
+	public static final String CLIENT_PHONE_NUMBER = "{{mobile_no}}";
 
 }

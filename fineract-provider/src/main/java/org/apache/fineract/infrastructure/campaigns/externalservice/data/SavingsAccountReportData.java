@@ -29,6 +29,9 @@ public class SavingsAccountReportData {
 	private LocalDate submittedOnDate;
 	private String clientDisplayName;
 	private String clientFirstName;
+	private String clientEmail;
+	private String clientPhoneNumber;
+	private String savingsProductName;
 
 	public Long getSavingsAccountId() {
 		return savingsAccountId;
@@ -76,5 +79,29 @@ public class SavingsAccountReportData {
 
 	public void setClientFirstName(String clientFirstName) {
 		this.clientFirstName = clientFirstName;
+	}
+
+	public String getClientEmail() {
+		return clientEmail;
+	}
+
+	public void setClientEmail(String clientEmail) {
+		this.clientEmail = clientEmail;
+	}
+
+	public String getClientPhoneNumber() {
+		return clientPhoneNumber;
+	}
+
+	public void setClientPhoneNumber(String clientPhoneNumber) {
+		this.clientPhoneNumber = clientPhoneNumber;
+	}
+
+	public String getSavingsProductName() {
+		return savingsProductName;
+	}
+
+	public void setSavingsProductName(String savingsProductName) {
+		this.savingsProductName = savingsProductName;
 	}
 }

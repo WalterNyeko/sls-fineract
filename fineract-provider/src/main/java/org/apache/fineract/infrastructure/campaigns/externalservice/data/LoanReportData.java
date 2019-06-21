@@ -36,6 +36,9 @@ public class LoanReportData {
 	private Float annualInterestRate;
 	private String officerFirstName;
 	private String officerDisplayName;
+	private String clientEmail;
+	private String clientPhoneNumber;
+	private String loanProductName;
 
 	public Long getLoanId() {
 		return loanId;
@@ -123,5 +126,29 @@ public class LoanReportData {
 
 	public void setOfficerDisplayName(String officerDisplayName) {
 		this.officerDisplayName = officerDisplayName;
+	}
+
+	public String getClientEmail() {
+		return clientEmail;
+	}
+
+	public void setClientEmail(String clientEmail) {
+		this.clientEmail = clientEmail;
+	}
+
+	public String getClientPhoneNumber() {
+		return clientPhoneNumber;
+	}
+
+	public void setClientPhoneNumber(String clientPhoneNumber) {
+		this.clientPhoneNumber = clientPhoneNumber;
+	}
+
+	public String getLoanProductName() {
+		return loanProductName;
+	}
+
+	public void setLoanProductName(String loanProductName) {
+		this.loanProductName = loanProductName;
 	}
 }

@@ -19,6 +19,7 @@
 
 package org.apache.fineract.infrastructure.campaigns.externalservice.service;
 
+import org.apache.fineract.infrastructure.campaigns.email.domain.ExternalServiceCampaignLogRepository;
 import org.apache.fineract.infrastructure.campaigns.email.domain.ExternalServiceCampaignRepository;
 import org.apache.fineract.infrastructure.campaigns.externalservice.constants.ExternalServiceCampaignConstants;
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.ClientReportData;
@@ -27,13 +28,14 @@ import org.apache.fineract.infrastructure.campaigns.externalservice.data.LoanTra
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.SavingsAccountReportData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.SavingsAccountTransactionReportData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaign;
+import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.core.domain.JdbcSupport;
 import org.apache.fineract.infrastructure.core.service.RoutingDataSource;
+import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.apache.fineract.infrastructure.jobs.annotation.CronTarget;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepository;
-import org.apache.fineract.portfolio.client.domain.ClientRepositoryWrapper;
 import org.apache.fineract.portfolio.common.BusinessEventNotificationConstants;
 import org.apache.fineract.portfolio.common.service.BusinessEventListner;
 import org.apache.fineract.portfolio.common.service.BusinessEventNotifierService;
@@ -41,12 +43,6 @@ import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransaction;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.codehaus.jettison.json.JSONException;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -57,15 +53,11 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 @Service
 public class ExternalServiceCampaignDomainService {
@@ -75,25 +67,31 @@ public class ExternalServiceCampaignDomainService {
 	private final LoanReportMapper loanReportMapper;
 	private final ClientRepository clientRepository;
 	private final ClientReportMapper clientReportMapper;
+	private final ConfigurationDomainService configurationDomainService;
 	private final SavingsAccountReportMapper savingsAccountReportMapper;
 	private final LoanTransactionReportMapper loanTransactionReportMapper;
 	private final BusinessEventNotifierService businessEventNotifierService;
 	private final ExternalServiceCampaignRepository externalServiceCampaignRepository;
+	private final ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository;
 	private final SavingsAccountTransactionReportMapper savingsAccountTransactionReportMapper;
 
 	@Autowired
 	public ExternalServiceCampaignDomainService(RoutingDataSource dataSource,
 												ClientRepository clientRepository,
+												ConfigurationDomainService configurationDomainService,
 												BusinessEventNotifierService businessEventNotifierService,
-												ExternalServiceCampaignRepository externalServiceCampaignRepository) {
+												ExternalServiceCampaignRepository externalServiceCampaignRepository,
+												ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
 		this.clientRepository = clientRepository;
 		this.loanReportMapper = new LoanReportMapper();
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 		this.clientReportMapper = new ClientReportMapper();
+		this.configurationDomainService = configurationDomainService;
 		this.businessEventNotifierService = businessEventNotifierService;
 		this.savingsAccountReportMapper = new SavingsAccountReportMapper();
 		this.loanTransactionReportMapper = new LoanTransactionReportMapper();
 		this.externalServiceCampaignRepository = externalServiceCampaignRepository;
+		this.externalServiceCampaignLogRepository = externalServiceCampaignLogRepository;
 		this.savingsAccountTransactionReportMapper = new SavingsAccountTransactionReportMapper();
 	}
 
@@ -105,6 +103,36 @@ public class ExternalServiceCampaignDomainService {
 		this.businessEventNotifierService.addBusinessEventPostListners(BusinessEventNotificationConstants.BUSINESS_EVENTS.SAVINGS_DEPOSIT, new CallExternalServiceOnAccountCredit());
 		this.businessEventNotifierService.addBusinessEventPostListners(BusinessEventNotificationConstants.BUSINESS_EVENTS.SAVINGS_WITHDRAWAL, new CallExternalServiceOnAccountDebit());
 		this.businessEventNotifierService.addBusinessEventPostListners(BusinessEventNotificationConstants.BUSINESS_EVENTS.SAVINGS_CREATE, new CallExternalServiceOnSavingsAccountCreated());
+	}
+
+	private void callExternalSystem(ExternalServiceCampaign campaign, String payload) {
+		ExternalServiceExecutor externalServiceExecutor = new ExternalServiceExecutor(configurationDomainService.getExternalServiceCampaignRetryDelay(),
+				payload, configurationDomainService.getExternalServiceCampaignMaxRetries(), ThreadLocalContextUtil.getTenant(), campaign, this.externalServiceCampaignLogRepository);
+		externalServiceExecutor.start();
+	}
+
+	private void callExternalSystem(ExternalServiceCampaign campaign, String payload, Loan loan) {
+		ExternalServiceExecutor externalServiceExecutor = new ExternalServiceExecutor(loan, configurationDomainService.getExternalServiceCampaignRetryDelay(),
+				payload, configurationDomainService.getExternalServiceCampaignMaxRetries(), ThreadLocalContextUtil.getTenant(), campaign, this.externalServiceCampaignLogRepository);
+		externalServiceExecutor.start();
+	}
+
+	private void callExternalSystem(ExternalServiceCampaign campaign, String payload, LoanTransaction loanTransaction) {
+		ExternalServiceExecutor externalServiceExecutor = new ExternalServiceExecutor(loanTransaction, configurationDomainService.getExternalServiceCampaignRetryDelay(),
+				payload, configurationDomainService.getExternalServiceCampaignMaxRetries(), ThreadLocalContextUtil.getTenant(), campaign, this.externalServiceCampaignLogRepository);
+		externalServiceExecutor.start();
+	}
+
+	private void callExternalSystem(ExternalServiceCampaign campaign, String payload, SavingsAccount savingsAccount) {
+		ExternalServiceExecutor externalServiceExecutor = new ExternalServiceExecutor(savingsAccount, configurationDomainService.getExternalServiceCampaignRetryDelay(),
+				payload, configurationDomainService.getExternalServiceCampaignMaxRetries(), ThreadLocalContextUtil.getTenant(), campaign, this.externalServiceCampaignLogRepository);
+		externalServiceExecutor.start();
+	}
+
+	private void callExternalSystem(ExternalServiceCampaign campaign, String payload, SavingsAccountTransaction savingsAccountTransaction) {
+		ExternalServiceExecutor externalServiceExecutor = new ExternalServiceExecutor(savingsAccountTransaction, configurationDomainService.getExternalServiceCampaignRetryDelay(),
+				payload, configurationDomainService.getExternalServiceCampaignMaxRetries(), ThreadLocalContextUtil.getTenant(), campaign, this.externalServiceCampaignLogRepository);
+		externalServiceExecutor.start();
 	}
 
 	@CronTarget(jobName = JobName.EXECUTE_SCHEDULED_EXTERNAL_SERVICE_CAMPAIGNS)
@@ -153,7 +181,7 @@ public class ExternalServiceCampaignDomainService {
 					filteredCampaigns.add(campaign);
 				}
 			}
-			});
+		});
 		if (!filteredCampaigns.isEmpty()) {
 			filteredCampaigns.forEach(campaign -> {
 				List<Client> clients = this.clientRepository.findAll();
@@ -173,7 +201,7 @@ public class ExternalServiceCampaignDomainService {
 		sql = sql.replace("${clientId}", client.getId().toString());
 		ClientReportData clientReport = this.jdbcTemplate.queryForObject(sql, this.clientReportMapper);
 		String payload = this.replacePlaceholdersInPayload(campaign.getPayload(), clientReport);
-		this.callExternalSystem(campaign.getUrl(), payload);
+		this.callExternalSystem(campaign, payload);
 
 	}
 
@@ -190,7 +218,7 @@ public class ExternalServiceCampaignDomainService {
 				sql = sql.replace("${loanId}", loan.getId().toString());
 				LoanReportData loanReport = this.jdbcTemplate.queryForObject(sql, loanReportMapper);
 				String payload = this.replacePlaceholdersInPayload(campaign.getPayload(), loanReport);
-				this.callExternalSystem(campaign.getUrl(), payload);
+				this.callExternalSystem(campaign, payload, loan);
 			}
 		}
 	}
@@ -208,7 +236,7 @@ public class ExternalServiceCampaignDomainService {
 				sql = sql.replace("${transactionId}", loanTransaction.getId().toString());
 				LoanTransactionReportData loanTransactionReport = this.jdbcTemplate.queryForObject(sql, loanTransactionReportMapper);
 				String payload = this.replacePlaceholdersInPayload(campaign.getPayload(), loanTransactionReport);
-				this.callExternalSystem(campaign.getUrl(), payload);
+				this.callExternalSystem(campaign, payload, loanTransaction);
 			}
 		}
 	}
@@ -226,7 +254,7 @@ public class ExternalServiceCampaignDomainService {
 				sql = sql.replace("${savingsId}", savingsAccount.getId().toString());
 				SavingsAccountReportData savingsAccountReport = this.jdbcTemplate.queryForObject(sql, savingsAccountReportMapper);
 				String payload = this.replacePlaceholdersInPayload(campaign.getPayload(), savingsAccountReport);
-				this.callExternalSystem(campaign.getUrl(), payload);
+				this.callExternalSystem(campaign, payload, savingsAccount);
 			}
 		}
 	}
@@ -244,7 +272,7 @@ public class ExternalServiceCampaignDomainService {
 				sql = sql.replace("${savingsTransactionId}", savingsAccountTransaction.getId().toString());
 				SavingsAccountTransactionReportData savingsAccountTransactionReport = this.jdbcTemplate.queryForObject(sql, savingsAccountTransactionReportMapper);
 				String payload = this.replacePlaceholdersInPayload(campaign.getPayload(), savingsAccountTransactionReport);
-				this.callExternalSystem(campaign.getUrl(), payload);
+				this.callExternalSystem(campaign, payload, savingsAccountTransaction);
 			}
 		}
 	}
@@ -256,6 +284,9 @@ public class ExternalServiceCampaignDomainService {
 		payload = payload.replace(ExternalServiceCampaignConstants.SUBMIT_DATE, "\"" + loanReport.getSubmittedOnDate().toString("YYYY-MM-DD") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + loanReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + loanReport.getClientDisplayName() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_EMAIL, "\"" + loanReport.getClientEmail() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + loanReport.getClientPhoneNumber() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.LOAN_PRODUCT_NAME, "\"" + loanReport.getLoanProductName() + "\"");
 		if (loanReport.getApprovedOnDate() != null) {
 			payload = payload.replace(ExternalServiceCampaignConstants.APPROVAL_DATE, "\"" + loanReport.getApprovedOnDate().toString("YYYY-MM-DD") + "\"");
 		}
@@ -281,6 +312,9 @@ public class ExternalServiceCampaignDomainService {
 		payload = payload.replace(ExternalServiceCampaignConstants.TRANSACTION_DATE, "\"" + loanTransactionReport.getTransactionDate().toString("YYYY-MM-DD") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + loanTransactionReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + loanTransactionReport.getClientDisplayName() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_EMAIL, "\"" + loanTransactionReport.getClientEmail() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + loanTransactionReport.getClientPhoneNumber() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.LOAN_PRODUCT_NAME, "\"" + loanTransactionReport.getLoanProductName() + "\"");
 		return payload;
 	}
 
@@ -291,6 +325,9 @@ public class ExternalServiceCampaignDomainService {
 		payload = payload.replace(ExternalServiceCampaignConstants.SUBMIT_DATE, "\"" + savingsAccountReport.getSubmittedOnDate().toString("YYYY-MM-DD") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + savingsAccountReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + savingsAccountReport.getClientDisplayName() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_EMAIL, "\"" + savingsAccountReport.getClientEmail() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + savingsAccountReport.getClientPhoneNumber() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.SAVINGS_PRODUCT_NAME, "\"" + savingsAccountReport.getSavingsProductName() + "\"");
 		return payload;
 	}
 
@@ -304,6 +341,9 @@ public class ExternalServiceCampaignDomainService {
 		payload = payload.replace(ExternalServiceCampaignConstants.TRANSACTION_DATE, "\"" + savingsAccountTransactionReport.getTransactionDate().toString("YYYY-MM-DD") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + savingsAccountTransactionReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + savingsAccountTransactionReport.getClientDisplayName() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_EMAIL, "\"" + savingsAccountTransactionReport.getClientEmail() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + savingsAccountTransactionReport.getClientPhoneNumber() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.SAVINGS_PRODUCT_NAME, "\"" + savingsAccountTransactionReport.getSavingsProductName() + "\"");
 		return payload;
 	}
 
@@ -311,36 +351,9 @@ public class ExternalServiceCampaignDomainService {
 		payload = payload.replace(ExternalServiceCampaignConstants.DATE_OF_BIRTH, "\"" + clientReport.getDateOfBirth().toString("YYYY-MM-DD") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + clientReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + clientReport.getClientDisplayName() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_EMAIL, "\"" + clientReport.getClientEmail() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_PHONE_NUMBER, "\"" + clientReport.getClientPhoneNumber() + "\"");
 		return payload;
-	}
-
-	private void callExternalSystem(String url, String payload) {
-		try {
-			HttpClient client = HttpClientBuilder.create().build();
-			HttpPost post = new HttpPost(url);
-			StringEntity input = new StringEntity(payload, ContentType.APPLICATION_JSON);
-			post.addHeader("accept", ContentType.APPLICATION_JSON.getMimeType());
-			post.addHeader("content-type", ContentType.APPLICATION_JSON.getMimeType());
-			post.setEntity(input);
-
-			HttpResponse response = client.execute(post);
-
-			int status = response.getStatusLine().getStatusCode();
-			if (!(status >= 200 && status < 300)) {
-				BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-				String line = rd.readLine();
-				System.out.println("========================================================================");
-				System.out.println(response.getStatusLine().getReasonPhrase());
-				System.out.println("REQUEST STRING: " + payload);
-				System.out.println("========================================================================");
-				System.out.println("RESPONSE STRING: " + line);
-				System.out.println("========================================================================");
-			} else {
-
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
 	}
 
 	private List<ExternalServiceCampaign> retrieveExternalServiceCampaigns(String reportName) {
@@ -494,6 +507,9 @@ public class ExternalServiceCampaignDomainService {
 			loanReport.setAnnualInterestRate(rs.getFloat("annualInterestRate"));
 			loanReport.setOfficerFirstName(rs.getString("officerFirstname"));
 			loanReport.setOfficerDisplayName(rs.getString("officerDisplayName"));
+			loanReport.setLoanProductName(rs.getString("loan_product_name"));
+			loanReport.setClientEmail(rs.getString("email_address"));
+			loanReport.setClientPhoneNumber(rs.getString("mobile_no"));
 			return loanReport;
 		}
 	}
@@ -509,6 +525,9 @@ public class ExternalServiceCampaignDomainService {
 			loanTransactionReport.setOutstandingBalance(rs.getBigDecimal("outstandingBalance"));
 			loanTransactionReport.setClientDisplayName(rs.getString("clientDisplayName"));
 			loanTransactionReport.setClientFirstName(rs.getString("clientFirstName"));
+			loanTransactionReport.setLoanProductName(rs.getString("loan_product_name"));
+			loanTransactionReport.setClientEmail(rs.getString("email_address"));
+			loanTransactionReport.setClientPhoneNumber(rs.getString("mobile_no"));
 			return loanTransactionReport;
 		}
 	}
@@ -524,6 +543,9 @@ public class ExternalServiceCampaignDomainService {
 			savingsAccountReport.setSubmittedOnDate(JdbcSupport.getLocalDate(rs, "submittedon_date"));
 			savingsAccountReport.setClientDisplayName(rs.getString("clientDisplayName"));
 			savingsAccountReport.setClientFirstName(rs.getString("clientFirstName"));
+			savingsAccountReport.setSavingsProductName(rs.getString("savings_product_name"));
+			savingsAccountReport.setClientEmail(rs.getString("email_address"));
+			savingsAccountReport.setClientPhoneNumber(rs.getString("mobile_no"));
 			return savingsAccountReport;
 		}
 	}
@@ -544,6 +566,9 @@ public class ExternalServiceCampaignDomainService {
 			savingsAccountTransactionReport.setTransactionDate(JdbcSupport.getLocalDate(rs, "transactionDate"));
 			savingsAccountTransactionReport.setClientDisplayName(rs.getString("clientDisplayName"));
 			savingsAccountTransactionReport.setClientFirstName(rs.getString("clientFirstName"));
+			savingsAccountTransactionReport.setSavingsProductName(rs.getString("savings_product_name"));
+			savingsAccountTransactionReport.setClientEmail(rs.getString("email_address"));
+			savingsAccountTransactionReport.setClientPhoneNumber(rs.getString("mobile_no"));
 			return savingsAccountTransactionReport;
 		}
 	}
@@ -556,6 +581,8 @@ public class ExternalServiceCampaignDomainService {
 			clientReport.setDateOfBirth(JdbcSupport.getLocalDate(rs, "dateOfBirth"));
 			clientReport.setClientDisplayName(rs.getString("clientDisplayName"));
 			clientReport.setClientFirstName(rs.getString("clientFirstName"));
+			clientReport.setClientEmail(rs.getString("email_address"));
+			clientReport.setClientPhoneNumber(rs.getString("mobile_no"));
 			return clientReport;
 		}
 	}

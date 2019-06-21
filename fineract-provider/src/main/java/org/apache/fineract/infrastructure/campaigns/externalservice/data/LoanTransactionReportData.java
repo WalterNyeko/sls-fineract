@@ -31,6 +31,9 @@ public class LoanTransactionReportData {
 	private BigDecimal outstandingBalance;
 	private String clientDisplayName;
 	private String clientFirstName;
+	private String clientEmail;
+	private String clientPhoneNumber;
+	private String loanProductName;
 
 	public Long getLoanId() {
 		return loanId;
@@ -78,5 +81,29 @@ public class LoanTransactionReportData {
 
 	public void setClientFirstName(String clientFirstName) {
 		this.clientFirstName = clientFirstName;
+	}
+
+	public String getClientEmail() {
+		return clientEmail;
+	}
+
+	public void setClientEmail(String clientEmail) {
+		this.clientEmail = clientEmail;
+	}
+
+	public String getClientPhoneNumber() {
+		return clientPhoneNumber;
+	}
+
+	public void setClientPhoneNumber(String clientPhoneNumber) {
+		this.clientPhoneNumber = clientPhoneNumber;
+	}
+
+	public String getLoanProductName() {
+		return loanProductName;
+	}
+
+	public void setLoanProductName(String loanProductName) {
+		this.loanProductName = loanProductName;
 	}
 }
