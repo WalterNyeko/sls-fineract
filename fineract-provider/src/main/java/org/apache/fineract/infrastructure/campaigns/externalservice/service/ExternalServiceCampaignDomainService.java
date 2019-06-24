@@ -54,6 +54,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,6 +103,7 @@ public class ExternalServiceCampaignDomainService {
 		this.businessEventNotifierService.addBusinessEventPostListners(BusinessEventNotificationConstants.BUSINESS_EVENTS.LOAN_DISBURSAL, new CallExternalServiceOnLoanDisbursed());
 		this.businessEventNotifierService.addBusinessEventPostListners(BusinessEventNotificationConstants.BUSINESS_EVENTS.SAVINGS_DEPOSIT, new CallExternalServiceOnAccountCredit());
 		this.businessEventNotifierService.addBusinessEventPostListners(BusinessEventNotificationConstants.BUSINESS_EVENTS.SAVINGS_WITHDRAWAL, new CallExternalServiceOnAccountDebit());
+		this.businessEventNotifierService.addBusinessEventPostListners(BusinessEventNotificationConstants.BUSINESS_EVENTS.LOAN_MAKE_REPAYMENT, new CallExternalServiceOnLoanRepayment());
 		this.businessEventNotifierService.addBusinessEventPostListners(BusinessEventNotificationConstants.BUSINESS_EVENTS.SAVINGS_CREATE, new CallExternalServiceOnSavingsAccountCreated());
 	}
 
@@ -322,8 +324,8 @@ public class ExternalServiceCampaignDomainService {
 
 	private String replacePlaceholdersInPayload(String payload, SavingsAccountReportData savingsAccountReport) {
 		payload = payload.replace(ExternalServiceCampaignConstants.SAVINGS_ACCOUNT_ID, savingsAccountReport.getSavingsAccountId().toString());
-		payload = payload.replace(ExternalServiceCampaignConstants.ACCOUNT_NUMBER, "\"" + savingsAccountReport.getAccountNumber().toString() + "\"");
-		payload = payload.replace(ExternalServiceCampaignConstants.NUBAN_ACCOUNT_NUMBER, "\"" + savingsAccountReport.getNubanAccountNumber().toString() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.ACCOUNT_NUMBER, "\"" + savingsAccountReport.getAccountNumber() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.NUBAN_ACCOUNT_NUMBER, "\"" + savingsAccountReport.getNubanAccountNumber() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.SUBMIT_DATE, "\"" + savingsAccountReport.getSubmittedOnDate().toString("YYYY-MM-dd") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + savingsAccountReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + savingsAccountReport.getClientDisplayName() + "\"");
@@ -562,11 +564,12 @@ public class ExternalServiceCampaignDomainService {
 			savingsAccountTransactionReport.setTransactionId(rs.getLong("transactionId"));
 			savingsAccountTransactionReport.setAccountNumber(rs.getString("accountNumber"));
 			savingsAccountTransactionReport.setNubanAccountNumber(rs.getString("nubanAccountNumber"));
-			if (rs.getBigDecimal("depositAmount") != null) {
+			if (this.hasColumn(rs, "depositAmount")) {
 				savingsAccountTransactionReport.setTransactionAmount(rs.getBigDecimal("depositAmount"));
-			} else if (rs.getBigDecimal("withdrawalAmount") != null) {
+			} else if (this.hasColumn(rs, "withdrawalAmount")) {
 				savingsAccountTransactionReport.setTransactionAmount(rs.getBigDecimal("withdrawalAmount"));
 			}
+			savingsAccountTransactionReport.setAccountBalance(rs.getBigDecimal("accountBalance"));
 			savingsAccountTransactionReport.setTransactionDate(JdbcSupport.getLocalDate(rs, "transactionDate"));
 			savingsAccountTransactionReport.setClientDisplayName(rs.getString("clientDisplayName"));
 			savingsAccountTransactionReport.setClientFirstName(rs.getString("clientFirstName"));
@@ -574,6 +577,17 @@ public class ExternalServiceCampaignDomainService {
 			savingsAccountTransactionReport.setClientEmail(rs.getString("email_address"));
 			savingsAccountTransactionReport.setClientPhoneNumber(rs.getString("mobile_no"));
 			return savingsAccountTransactionReport;
+		}
+
+		private boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
+			ResultSetMetaData metaData = rs.getMetaData();
+			int columns = metaData.getColumnCount();
+			for (int x = 1; x <= columns; x++) {
+				if (columnName.equals(metaData.getColumnName(x)) || columnName.equals(metaData.getColumnLabel(x))) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 

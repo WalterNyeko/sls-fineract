@@ -26,7 +26,7 @@ public final class ExternalServiceCampaignConstants {
 	public static final String LOAN_AMOUNT = "{{loanAmount}}";
 	public static final String SUBMIT_DATE = "{{submittedon_date}}";
 	public static final String APPROVAL_DATE = "{{approvedon_date}}";
-	public static final String DISBURSEMENT_DATE = "{{disbursededon_date}}";
+	public static final String DISBURSEMENT_DATE = "{{disbursedon_date}}";
 	public static final String CLIENT_DISPLAY_NAME = "{{clientDisplayName}}";
 	public static final String CLIENT_FIRST_NAME = "{{clientFirstName}}";
 	public static final String ANNUAL_INTEREST_RATE = "{{annualInterestRate}}";

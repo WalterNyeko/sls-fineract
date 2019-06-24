@@ -172,7 +172,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
             final AppUser submittedBy = this.context.authenticatedUser();
 
             final SavingsAccount account = this.savingAccountAssembler.assembleFrom(command, submittedBy);
-            this.savingAccountRepository.save(account);
+            this.savingAccountRepository.saveAndFlush(account);
 
             generateAccountNumber(account);
 
@@ -211,7 +211,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
         if (account.isAccountNumberRequiresAutoGeneration()) {
             final AccountNumberFormat accountNumberFormat = this.accountNumberFormatRepository.findByAccountType(EntityAccountType.SAVINGS);
             account.updateAccountNo(this.accountNumberGenerator.generate(account, accountNumberFormat));
-            this.savingAccountRepository.save(account);
+            this.savingAccountRepository.saveAndFlush(account);
         }
 		this.generateNubanAccountNumber(account);
     }
@@ -223,7 +223,7 @@ public class SavingsApplicationProcessWritePlatformServiceJpaRepositoryImpl impl
 		} else {
 			account.setNubanAccountNumber(this.nubanAccountService.generateNubanAccountNumber(account.getAccountNumber()));
 		}
-		this.savingAccountRepository.save(account);
+		this.savingAccountRepository.saveAndFlush(account);
 	}
 
     @Transactional
