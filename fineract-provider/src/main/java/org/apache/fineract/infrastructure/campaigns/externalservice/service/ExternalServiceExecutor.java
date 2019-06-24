@@ -139,13 +139,13 @@ public class ExternalServiceExecutor implements Runnable {
 			int status = response.getStatusLine().getStatusCode();
 			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 			String line = rd.readLine();
-			if (!(status >= 200 && status < 300)) {
-				System.out.println("========================================================================");
-				System.out.println(response.getStatusLine().getReasonPhrase());
-				System.out.println("REQUEST STRING: " + this.payload);
-				System.out.println("========================================================================");
-				System.out.println("RESPONSE STRING: " + line);
-				System.out.println("========================================================================");
+			System.out.println("========================================================================");
+			System.out.println(response.getStatusLine().getReasonPhrase());
+			System.out.println("REQUEST STRING: " + this.payload);
+			System.out.println("========================================================================");
+			System.out.println("RESPONSE STRING: " + line);
+			System.out.println("========================================================================");
+			if (status >= 200 && status < 300) {
 				this.logExternalServiceCampaignExecution(status, line, null);
 			} else {
 				String error = response.getStatusLine().getReasonPhrase() + ": " + line;

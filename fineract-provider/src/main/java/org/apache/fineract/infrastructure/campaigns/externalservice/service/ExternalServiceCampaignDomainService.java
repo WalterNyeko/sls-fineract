@@ -281,17 +281,18 @@ public class ExternalServiceCampaignDomainService {
 		payload = payload.replace(ExternalServiceCampaignConstants.LOAN_ID, loanReport.getLoanId().toString());
 		payload = payload.replace(ExternalServiceCampaignConstants.LOAN_AMOUNT, loanReport.getLoanAmount().toString());
 		payload = payload.replace(ExternalServiceCampaignConstants.ANNUAL_INTEREST_RATE, loanReport.getAnnualInterestRate().toString());
-		payload = payload.replace(ExternalServiceCampaignConstants.SUBMIT_DATE, "\"" + loanReport.getSubmittedOnDate().toString("YYYY-MM-DD") + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.SUBMIT_DATE, "\"" + loanReport.getSubmittedOnDate().toString("YYYY-MM-dd") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + loanReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + loanReport.getClientDisplayName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_EMAIL, "\"" + loanReport.getClientEmail() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_PHONE_NUMBER, "\"" + loanReport.getClientPhoneNumber() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + loanReport.getClientPhoneNumber() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.LOAN_PRODUCT_NAME, "\"" + loanReport.getLoanProductName() + "\"");
 		if (loanReport.getApprovedOnDate() != null) {
-			payload = payload.replace(ExternalServiceCampaignConstants.APPROVAL_DATE, "\"" + loanReport.getApprovedOnDate().toString("YYYY-MM-DD") + "\"");
+			payload = payload.replace(ExternalServiceCampaignConstants.APPROVAL_DATE, "\"" + loanReport.getApprovedOnDate().toString("YYYY-MM-dd") + "\"");
 		}
 		if (loanReport.getDisbursedOnDate() != null) {
-			payload = payload.replace(ExternalServiceCampaignConstants.DISBURSEMENT_DATE, "\"" + loanReport.getDisbursedOnDate().toString("YYYY-MM-DD") + "\"");
+			payload = payload.replace(ExternalServiceCampaignConstants.DISBURSEMENT_DATE, "\"" + loanReport.getDisbursedOnDate().toString("YYYY-MM-dd") + "\"");
 		}
 		if (loanReport.getOfficerId() != null) {
 			payload = payload.replace(ExternalServiceCampaignConstants.OFFICER_ID, loanReport.getOfficerId().toString());
@@ -309,10 +310,11 @@ public class ExternalServiceCampaignDomainService {
 		payload = payload.replace(ExternalServiceCampaignConstants.LOAN_ID, loanTransactionReport.getLoanId().toString());
 		payload = payload.replace(ExternalServiceCampaignConstants.TRANSACTION_AMOUNT, loanTransactionReport.getTransactionAmount().toString());
 		payload = payload.replace(ExternalServiceCampaignConstants.OUTSTANDING_BALANCE, loanTransactionReport.getOutstandingBalance().toString());
-		payload = payload.replace(ExternalServiceCampaignConstants.TRANSACTION_DATE, "\"" + loanTransactionReport.getTransactionDate().toString("YYYY-MM-DD") + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.TRANSACTION_DATE, "\"" + loanTransactionReport.getTransactionDate().toString("YYYY-MM-dd") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + loanTransactionReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + loanTransactionReport.getClientDisplayName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_EMAIL, "\"" + loanTransactionReport.getClientEmail() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_PHONE_NUMBER, "\"" + loanTransactionReport.getClientPhoneNumber() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + loanTransactionReport.getClientPhoneNumber() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.LOAN_PRODUCT_NAME, "\"" + loanTransactionReport.getLoanProductName() + "\"");
 		return payload;
@@ -322,10 +324,11 @@ public class ExternalServiceCampaignDomainService {
 		payload = payload.replace(ExternalServiceCampaignConstants.SAVINGS_ACCOUNT_ID, savingsAccountReport.getSavingsAccountId().toString());
 		payload = payload.replace(ExternalServiceCampaignConstants.ACCOUNT_NUMBER, "\"" + savingsAccountReport.getAccountNumber().toString() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.NUBAN_ACCOUNT_NUMBER, "\"" + savingsAccountReport.getNubanAccountNumber().toString() + "\"");
-		payload = payload.replace(ExternalServiceCampaignConstants.SUBMIT_DATE, "\"" + savingsAccountReport.getSubmittedOnDate().toString("YYYY-MM-DD") + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.SUBMIT_DATE, "\"" + savingsAccountReport.getSubmittedOnDate().toString("YYYY-MM-dd") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + savingsAccountReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + savingsAccountReport.getClientDisplayName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_EMAIL, "\"" + savingsAccountReport.getClientEmail() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_PHONE_NUMBER, "\"" + savingsAccountReport.getClientPhoneNumber() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + savingsAccountReport.getClientPhoneNumber() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.SAVINGS_PRODUCT_NAME, "\"" + savingsAccountReport.getSavingsProductName() + "\"");
 		return payload;
@@ -338,17 +341,18 @@ public class ExternalServiceCampaignDomainService {
 		payload = payload.replace(ExternalServiceCampaignConstants.DEPOSIT_AMOUNT, savingsAccountTransactionReport.getTransactionAmount().toString());
 		payload = payload.replace(ExternalServiceCampaignConstants.WITHDRAWAL_AMOUNT, savingsAccountTransactionReport.getTransactionAmount().toString());
 		payload = payload.replace(ExternalServiceCampaignConstants.ACCOUNT_BALANCE, savingsAccountTransactionReport.getAccountBalance().toString());
-		payload = payload.replace(ExternalServiceCampaignConstants.TRANSACTION_DATE, "\"" + savingsAccountTransactionReport.getTransactionDate().toString("YYYY-MM-DD") + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.TRANSACTION_DATE, "\"" + savingsAccountTransactionReport.getTransactionDate().toString("YYYY-MM-dd") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + savingsAccountTransactionReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + savingsAccountTransactionReport.getClientDisplayName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_EMAIL, "\"" + savingsAccountTransactionReport.getClientEmail() + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_PHONE_NUMBER, "\"" + savingsAccountTransactionReport.getClientPhoneNumber() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + savingsAccountTransactionReport.getClientPhoneNumber() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.SAVINGS_PRODUCT_NAME, "\"" + savingsAccountTransactionReport.getSavingsProductName() + "\"");
 		return payload;
 	}
 
 	private String replacePlaceholdersInPayload(String payload, ClientReportData clientReport) {
-		payload = payload.replace(ExternalServiceCampaignConstants.DATE_OF_BIRTH, "\"" + clientReport.getDateOfBirth().toString("YYYY-MM-DD") + "\"");
+		payload = payload.replace(ExternalServiceCampaignConstants.DATE_OF_BIRTH, "\"" + clientReport.getDateOfBirth().toString("YYYY-MM-dd") + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_FIRST_NAME, "\"" + clientReport.getClientFirstName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_DISPLAY_NAME, "\"" + clientReport.getClientDisplayName() + "\"");
 		payload = payload.replace(ExternalServiceCampaignConstants.CLIENT_EMAIL, "\"" + clientReport.getClientEmail() + "\"");
