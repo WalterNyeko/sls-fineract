@@ -16,22 +16,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.infrastructure.campaigns.externalservice.service;
 
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+package org.apache.fineract.infrastructure.campaigns.externalservice.domain;
 
-public interface ExternalServiceCampaignWritePlatformService {
+import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
 
-    CommandProcessingResult create(JsonCommand command);
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-    CommandProcessingResult update(Long resourceId, JsonCommand command);
+@Entity
+@Table(name = "external_service_campaign_api_key")
+public class ExternalServiceCampaignApiKey extends AbstractPersistableCustom<Long> {
 
-    CommandProcessingResult delete(Long resourceId);
+	@Column(nullable = false)
+	private String name;
 
-	CommandProcessingResult createApiKey(JsonCommand command);
+	@Column(name = "api_key", nullable = false)
+	private String key;
 
-	CommandProcessingResult updateApiKey(Long resourceId, JsonCommand command);
+	public String getName() {
+		return name;
+	}
 
-	CommandProcessingResult deleteApiKey(Long resourceId);
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
 }

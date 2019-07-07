@@ -132,6 +132,9 @@ public class ExternalServiceExecutor implements Runnable {
 			StringEntity input = new StringEntity(payload, ContentType.APPLICATION_JSON);
 			post.addHeader("accept", ContentType.APPLICATION_JSON.getMimeType());
 			post.addHeader("content-type", ContentType.APPLICATION_JSON.getMimeType());
+			if (this.externalServiceCampaign.getApiKey() != null) {
+				post.addHeader("Authorization", "Basic " + this.externalServiceCampaign.getApiKey().getKey());
+			}
 			post.setEntity(input);
 
 			HttpResponse response = client.execute(post);

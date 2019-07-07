@@ -23,7 +23,6 @@ import org.apache.fineract.infrastructure.campaigns.externalservice.domain.Exter
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-
 public interface ExternalServiceCampaignLogRepository extends JpaRepository<ExternalServiceCampaignLog, Long>, JpaSpecificationExecutor<ExternalServiceCampaignLog> {
 
 }

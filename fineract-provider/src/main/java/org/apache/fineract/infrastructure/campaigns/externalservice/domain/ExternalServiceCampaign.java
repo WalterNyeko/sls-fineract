@@ -28,6 +28,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.util.Date;
 
@@ -58,6 +59,10 @@ public class ExternalServiceCampaign extends AbstractPersistableCustom<Long> {
 	@ManyToOne
 	@JoinColumn(name = "savings_product_id")
 	private SavingsProduct savingsProduct;
+
+	@OneToOne
+	@JoinColumn(name = "api_key_id")
+	private ExternalServiceCampaignApiKey apiKey;
 
 	public String getCampaignName() {
 		return campaignName;
@@ -113,5 +118,13 @@ public class ExternalServiceCampaign extends AbstractPersistableCustom<Long> {
 
 	public void setSpecificExecutionDate(Date specificExecutionDate) {
 		this.specificExecutionDate = specificExecutionDate;
+	}
+
+	public ExternalServiceCampaignApiKey getApiKey() {
+		return apiKey;
+	}
+
+	public void setApiKey(ExternalServiceCampaignApiKey apiKey) {
+		this.apiKey = apiKey;
 	}
 }

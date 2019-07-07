@@ -21,18 +21,13 @@ package org.apache.fineract.infrastructure.campaigns.externalservice.api;
 import org.apache.fineract.commands.domain.CommandWrapper;
 import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
-import org.apache.fineract.infrastructure.campaigns.email.data.EmailBusinessRulesData;
-import org.apache.fineract.infrastructure.campaigns.email.data.EmailRecipientsData;
-import org.apache.fineract.infrastructure.campaigns.email.data.PreviewCampaignMessage;
-import org.apache.fineract.infrastructure.campaigns.email.service.EmailCampaignReadPlatformService;
-import org.apache.fineract.infrastructure.campaigns.email.service.EmailCampaignWritePlatformService;
+import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignApiKeyData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.service.ExternalServiceCampaignReadPlatformService;
 import org.apache.fineract.infrastructure.core.api.ApiRequestParameterHelper;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.serialization.ApiRequestJsonSerializationSettings;
 import org.apache.fineract.infrastructure.core.serialization.DefaultToApiJsonSerializer;
-import org.apache.fineract.infrastructure.core.serialization.FromJsonHelper;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -49,7 +44,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
 
 @Path("/externalservice/campaign")
 @Consumes({MediaType.APPLICATION_JSON})
@@ -58,46 +52,32 @@ import java.util.List;
 @Scope("singleton")
 public class ExternalServiceCampaignApiResource {
 
-
-	//change name to email campaign
 	private final String resourceNameForPermissions = "EXTERNAL_SERVICE_CAMPAIGN";
 
 	private final PlatformSecurityContext context;
 
-	private final DefaultToApiJsonSerializer<EmailBusinessRulesData> toApiJsonSerializer;
-	private final DefaultToApiJsonSerializer<EmailRecipientsData> emailRecipientsDataDefaultToApiJsonSerializer;
+	private final DefaultToApiJsonSerializer<ExternalServiceCampaignData> toApiJsonSerializer;
 
 	private final ApiRequestParameterHelper apiRequestParameterHelper;
 
-	private final EmailCampaignReadPlatformService emailCampaignReadPlatformService;
 	private final ExternalServiceCampaignReadPlatformService externalServiceCampaignReadPlatformService;
-	private final FromJsonHelper fromJsonHelper;
-
 
 	private final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService;
-	private final DefaultToApiJsonSerializer<ExternalServiceCampaignData> externalServiceCampaignDataDefaultToApiJsonSerializer;
-	private final EmailCampaignWritePlatformService emailCampaignWritePlatformService;
-
-	private final DefaultToApiJsonSerializer<PreviewCampaignMessage> previewCampaignMessageDefaultToApiJsonSerializer;
+	private final DefaultToApiJsonSerializer<ExternalServiceCampaignApiKeyData> externalServiceCampaignApiKeyDataToApiJsonSerializer;
 
 
 	@Autowired
-	public ExternalServiceCampaignApiResource(final PlatformSecurityContext context, final DefaultToApiJsonSerializer<EmailBusinessRulesData> toApiJsonSerializer, final ApiRequestParameterHelper apiRequestParameterHelper,
-											  final EmailCampaignReadPlatformService emailCampaignReadPlatformService, final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService,
-											  final DefaultToApiJsonSerializer<ExternalServiceCampaignData> externalServiceCampaignDataDefaultToApiJsonSerializer,
-											  final FromJsonHelper fromJsonHelper, final EmailCampaignWritePlatformService emailCampaignWritePlatformService,
-											  final DefaultToApiJsonSerializer<PreviewCampaignMessage> previewCampaignMessageDefaultToApiJsonSerializer,
-											  final DefaultToApiJsonSerializer<EmailRecipientsData> emailRecipientsDataDefaultToApiJsonSerializer, ExternalServiceCampaignReadPlatformService externalServiceCampaignReadPlatformService) {
+	public ExternalServiceCampaignApiResource(final PlatformSecurityContext context,
+											  final DefaultToApiJsonSerializer<ExternalServiceCampaignData> toApiJsonSerializer,
+											  final ApiRequestParameterHelper apiRequestParameterHelper,
+											  final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService,
+											  final DefaultToApiJsonSerializer<ExternalServiceCampaignApiKeyData> externalServiceCampaignApiKeyDataToApiJsonSerializer,
+											  ExternalServiceCampaignReadPlatformService externalServiceCampaignReadPlatformService) {
 		this.context = context;
 		this.toApiJsonSerializer = toApiJsonSerializer;
 		this.apiRequestParameterHelper = apiRequestParameterHelper;
-		this.emailCampaignReadPlatformService = emailCampaignReadPlatformService;
 		this.commandsSourceWritePlatformService = commandsSourceWritePlatformService;
-		this.externalServiceCampaignDataDefaultToApiJsonSerializer = externalServiceCampaignDataDefaultToApiJsonSerializer;
-		this.fromJsonHelper = fromJsonHelper;
-		this.emailCampaignWritePlatformService = emailCampaignWritePlatformService;
-		this.previewCampaignMessageDefaultToApiJsonSerializer = previewCampaignMessageDefaultToApiJsonSerializer;
-		this.emailRecipientsDataDefaultToApiJsonSerializer = emailRecipientsDataDefaultToApiJsonSerializer;
+		this.externalServiceCampaignApiKeyDataToApiJsonSerializer = externalServiceCampaignApiKeyDataToApiJsonSerializer;
 		this.externalServiceCampaignReadPlatformService = externalServiceCampaignReadPlatformService;
 	}
 
@@ -106,34 +86,25 @@ public class ExternalServiceCampaignApiResource {
 	@Path("{campaignId}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public String retrieveOneCampaign(@PathParam("campaignId") final Long campaignId, @Context final UriInfo uriInfo) {
-
 		this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
-		ExternalServiceCampaignData externalServiceCampaignData = this.externalServiceCampaignReadPlatformService.retrieveOne(campaignId);
 		final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
-
-		return this.externalServiceCampaignDataDefaultToApiJsonSerializer.serialize(settings, externalServiceCampaignData);
+		return this.toApiJsonSerializer.serialize(settings, this.externalServiceCampaignReadPlatformService.retrieveOne(campaignId));
 	}
 
 	@GET
 	@Produces({MediaType.APPLICATION_JSON})
 	public String retrieveAllCampaign(@Context final UriInfo uriInfo) {
-
 		this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
-		List<ExternalServiceCampaignData> externalServiceCampaigns = this.externalServiceCampaignReadPlatformService.retrieveAll();
 		final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
-
-		return this.externalServiceCampaignDataDefaultToApiJsonSerializer.serialize(settings, externalServiceCampaigns);
+		return this.toApiJsonSerializer.serialize(settings, this.externalServiceCampaignReadPlatformService.retrieveAll());
 	}
 
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
 	public String createCampaign(final String apiRequestBodyAsJson) {
-
 		final CommandWrapper commandRequest = new CommandWrapperBuilder().createExternalServiceCampaign().withJson(apiRequestBodyAsJson).build();
-
 		final CommandProcessingResult result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
-
 		return this.toApiJsonSerializer.serialize(result);
 	}
 
@@ -142,11 +113,8 @@ public class ExternalServiceCampaignApiResource {
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
 	public String updateCampaign(@PathParam("campaignId") final Long campaignId, final String apiRequestBodyAsJson) {
-
 		final CommandWrapper commandRequest = new CommandWrapperBuilder().updateExternalServiceCampaign(campaignId).withJson(apiRequestBodyAsJson).build();
-
 		final CommandProcessingResult result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
-
 		return this.toApiJsonSerializer.serialize(result);
 	}
 
@@ -154,33 +122,61 @@ public class ExternalServiceCampaignApiResource {
 	@Path("template")
 	public String template(@Context final UriInfo uriInfo) {
 		this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
-
-		final ExternalServiceCampaignData externalServiceCampaign = this.externalServiceCampaignReadPlatformService.retrieveTemplate();
-
 		final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
-		return this.externalServiceCampaignDataDefaultToApiJsonSerializer.serialize(settings, externalServiceCampaign);
-	}
-
-	@GET
-	@Path("{campaignId}/template")
-	public String retrieveOneTemplate(@PathParam("campaignId") final Long campaignId, @Context final UriInfo uriInfo) {
-		this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
-
-		final EmailBusinessRulesData emailBusinessRulesData = this.emailCampaignReadPlatformService.retrieveOneTemplate(campaignId, "API");
-		final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
-		return this.toApiJsonSerializer.serialize(settings, emailBusinessRulesData);
-
+		return this.toApiJsonSerializer.serialize(settings, this.externalServiceCampaignReadPlatformService.retrieveTemplate());
 	}
 
 	@DELETE
 	@Path("{campaignId}")
 	public String delete(@PathParam("campaignId") final Long campaignId) {
-
-		final CommandWrapper commandRequest = new CommandWrapperBuilder().deleteExtenalServiceCampaign(campaignId).build();
-
+		final CommandWrapper commandRequest = new CommandWrapperBuilder().deleteExternalServiceCampaign(campaignId).build();
 		final CommandProcessingResult result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
-
 		return this.toApiJsonSerializer.serialize(result);
 	}
 
+	@GET
+	@Path("apikey/{id}")
+	@Produces({MediaType.APPLICATION_JSON})
+	public String retrieveOneApiKey(@PathParam("id") final Long apiKeyId, @Context final UriInfo uriInfo) {
+		this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
+		final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
+		return this.externalServiceCampaignApiKeyDataToApiJsonSerializer.serialize(settings, this.externalServiceCampaignReadPlatformService.retrieveApiKeyById(apiKeyId));
+	}
+
+	@GET
+	@Path("apikey")
+	@Produces({MediaType.APPLICATION_JSON})
+	public String retrieveAllApiKeys(@Context final UriInfo uriInfo) {
+		this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
+		final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
+		return this.externalServiceCampaignApiKeyDataToApiJsonSerializer.serialize(settings, this.externalServiceCampaignReadPlatformService.retrieveApiKeys());
+	}
+
+	@POST
+	@Path("apikey")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public String createCampaignApiKey(final String apiRequestBodyAsJson) {
+		final CommandWrapper commandRequest = new CommandWrapperBuilder().createExternalServiceCampaignApiKey().withJson(apiRequestBodyAsJson).build();
+		final CommandProcessingResult result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
+		return this.externalServiceCampaignApiKeyDataToApiJsonSerializer.serialize(result);
+	}
+
+	@PUT
+	@Path("apikey/{id}")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public String updateCampaignApiKey(@PathParam("id") final Long id, final String apiRequestBodyAsJson) {
+		final CommandWrapper commandRequest = new CommandWrapperBuilder().updateExternalServiceCampaignApiKey(id).withJson(apiRequestBodyAsJson).build();
+		final CommandProcessingResult result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
+		return this.externalServiceCampaignApiKeyDataToApiJsonSerializer.serialize(result);
+	}
+
+	@DELETE
+	@Path("apikey/{id}")
+	public String deleteApiKey(@PathParam("id") final Long id) {
+		final CommandWrapper commandRequest = new CommandWrapperBuilder().deleteExternalServiceCampaignApiKey(id).build();
+		final CommandProcessingResult result = this.commandsSourceWritePlatformService.logCommandSource(commandRequest);
+		return this.externalServiceCampaignApiKeyDataToApiJsonSerializer.serialize(result);
+	}
 }

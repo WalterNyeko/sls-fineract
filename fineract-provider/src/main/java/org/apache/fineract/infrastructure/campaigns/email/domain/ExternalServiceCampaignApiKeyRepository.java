@@ -16,22 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.infrastructure.campaigns.externalservice.service;
 
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+package org.apache.fineract.infrastructure.campaigns.email.domain;
 
-public interface ExternalServiceCampaignWritePlatformService {
+import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaignApiKey;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-    CommandProcessingResult create(JsonCommand command);
+public interface ExternalServiceCampaignApiKeyRepository extends JpaRepository<ExternalServiceCampaignApiKey, Long>, JpaSpecificationExecutor<ExternalServiceCampaignApiKey> {
 
-    CommandProcessingResult update(Long resourceId, JsonCommand command);
-
-    CommandProcessingResult delete(Long resourceId);
-
-	CommandProcessingResult createApiKey(JsonCommand command);
-
-	CommandProcessingResult updateApiKey(Long resourceId, JsonCommand command);
-
-	CommandProcessingResult deleteApiKey(Long resourceId);
 }

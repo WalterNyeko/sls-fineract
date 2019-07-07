@@ -19,22 +19,17 @@
 
 package org.apache.fineract.infrastructure.campaigns.externalservice.service;
 
-import org.apache.fineract.infrastructure.campaigns.constants.CampaignType;
-import org.apache.fineract.infrastructure.campaigns.email.data.EmailBusinessRulesData;
 import org.apache.fineract.infrastructure.campaigns.email.domain.ExternalServiceCampaignRepository;
 import org.apache.fineract.infrastructure.campaigns.email.service.EmailCampaignReadPlatformService;
-import org.apache.fineract.infrastructure.campaigns.email.service.EmailReadPlatformService;
+import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignApiKeyData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaign;
-import org.apache.fineract.portfolio.loanproduct.data.LoanProductData;
+import org.apache.fineract.infrastructure.campaigns.email.domain.ExternalServiceCampaignApiKeyRepository;
 import org.apache.fineract.portfolio.loanproduct.service.LoanProductReadPlatformService;
-import org.apache.fineract.portfolio.savings.data.SavingsProductData;
-import org.apache.fineract.portfolio.savings.domain.SavingsProduct;
 import org.apache.fineract.portfolio.savings.service.SavingsProductReadPlatformService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,16 +40,19 @@ public class ExternalServiceCampaignReadPlatformServiceImpl implements ExternalS
 	private SavingsProductReadPlatformService savingsProductReadPlatformService;
 	private EmailCampaignReadPlatformService emailCampaignReadPlatformService;
 	private ExternalServiceCampaignRepository externalServiceCampaignRepository;
+	private ExternalServiceCampaignApiKeyRepository externalServiceCampaignApiKeyRepository;
 
 	@Autowired
 	public ExternalServiceCampaignReadPlatformServiceImpl(LoanProductReadPlatformService loanProductReadPlatformService,
 														  SavingsProductReadPlatformService savingsProductReadPlatformService,
 														  EmailCampaignReadPlatformService emailCampaignReadPlatformService,
-														  ExternalServiceCampaignRepository externalServiceCampaignRepository) {
+														  ExternalServiceCampaignRepository externalServiceCampaignRepository,
+														  ExternalServiceCampaignApiKeyRepository externalServiceCampaignApiKeyRepository) {
 		this.loanProductReadPlatformService = loanProductReadPlatformService;
 		this.savingsProductReadPlatformService = savingsProductReadPlatformService;
 		this.emailCampaignReadPlatformService = emailCampaignReadPlatformService;
 		this.externalServiceCampaignRepository = externalServiceCampaignRepository;
+		this.externalServiceCampaignApiKeyRepository = externalServiceCampaignApiKeyRepository;
 	}
 
 	@Override
@@ -75,20 +73,20 @@ public class ExternalServiceCampaignReadPlatformServiceImpl implements ExternalS
 		return campaign;
 	}
 
-	private void appendTemplate(ExternalServiceCampaignData externalServiceCampaign) {
-		final String searchType = "API";
-		Collection<SavingsProductData> savingsProducts = this.savingsProductReadPlatformService.retrieveAll();
-		Collection<LoanProductData> loanProducts = this.loanProductReadPlatformService.retrieveAllLoanProducts();
-		Collection<EmailBusinessRulesData> businessRules = this.emailCampaignReadPlatformService.retrieveAllBySearchType(searchType);
-		externalServiceCampaign.setLoanProducts(loanProducts);
-		externalServiceCampaign.setSavingsProducts(savingsProducts);
-		externalServiceCampaign.setBusinessRulesOptions(businessRules);
+	@Override
+	public List<ExternalServiceCampaignApiKeyData> retrieveApiKeys() {
+		return this.externalServiceCampaignApiKeyRepository.findAll().stream().map(c -> new ExternalServiceCampaignApiKeyData(c)).collect(Collectors.toList());
 	}
 
 	@Override
-	public ExternalServiceCampaignData retrieveWithTemplate(Long id) {
-		ExternalServiceCampaignData campaign = this.retrieveOne(id);
-		this.appendTemplate(campaign);
-		return campaign;
+	public ExternalServiceCampaignApiKeyData retrieveApiKeyById(Long id) {
+		return new ExternalServiceCampaignApiKeyData(this.externalServiceCampaignApiKeyRepository.findOne(id));
+	}
+
+	private void appendTemplate(ExternalServiceCampaignData externalServiceCampaign) {
+		externalServiceCampaign.setApiKeys(this.retrieveApiKeys());
+		externalServiceCampaign.setSavingsProducts(this.savingsProductReadPlatformService.retrieveAll());
+		externalServiceCampaign.setLoanProducts(this.loanProductReadPlatformService.retrieveAllLoanProducts());
+		externalServiceCampaign.setBusinessRulesOptions(this.emailCampaignReadPlatformService.retrieveAllBySearchType("API"));
 	}
 }

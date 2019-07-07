@@ -3149,11 +3149,35 @@ public class CommandWrapperBuilder {
 		return this;
 	}
 
-	public CommandWrapperBuilder deleteExtenalServiceCampaign(final Long resourceId) {
+	public CommandWrapperBuilder deleteExternalServiceCampaign(final Long resourceId) {
 		this.actionName = "DELETE";
 		this.entityName = "EXTERNAL_SERVICE_CAMPAIGN";
 		this.entityId = resourceId;
 		this.href = "/externalservice/campaign" + resourceId;
+		return this;
+	}
+
+	public CommandWrapperBuilder createExternalServiceCampaignApiKey() {
+		this.actionName = "CREATE";
+		this.entityName = "EXTERNAL_SERVICE_CAMPAIGN_API_KEY";
+		this.entityId = null;
+		this.href = "/externalservice/campaign/apikey";
+		return this;
+	}
+
+	public CommandWrapperBuilder updateExternalServiceCampaignApiKey(final Long resourceId) {
+		this.actionName = "UPDATE";
+		this.entityName = "EXTERNAL_SERVICE_CAMPAIGN_API_KEY";
+		this.entityId = resourceId;
+		this.href = "/externalservice/campaign/apikey" + resourceId;
+		return this;
+	}
+
+	public CommandWrapperBuilder deleteExternalServiceCampaignApiKey(final Long resourceId) {
+		this.actionName = "DELETE";
+		this.entityName = "EXTERNAL_SERVICE_CAMPAIGN_API_KEY";
+		this.entityId = resourceId;
+		this.href = "/externalservice/campaign/apikey" + resourceId;
 		return this;
 	}
 }

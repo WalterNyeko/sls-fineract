@@ -16,22 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.infrastructure.campaigns.externalservice.service;
 
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+package org.apache.fineract.infrastructure.campaigns.externalservice.data;
 
-public interface ExternalServiceCampaignWritePlatformService {
+import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaignApiKey;
 
-    CommandProcessingResult create(JsonCommand command);
+public class ExternalServiceCampaignApiKeyData {
 
-    CommandProcessingResult update(Long resourceId, JsonCommand command);
+	private Long id;
+	private String name;
+	private String apiKey;
 
-    CommandProcessingResult delete(Long resourceId);
-
-	CommandProcessingResult createApiKey(JsonCommand command);
-
-	CommandProcessingResult updateApiKey(Long resourceId, JsonCommand command);
-
-	CommandProcessingResult deleteApiKey(Long resourceId);
+	public ExternalServiceCampaignApiKeyData(ExternalServiceCampaignApiKey externalServiceCampaignApiKey) {
+		this.id = externalServiceCampaignApiKey.getId();
+		this.name = externalServiceCampaignApiKey.getName();
+		this.apiKey = externalServiceCampaignApiKey.getKey();
+	}
 }

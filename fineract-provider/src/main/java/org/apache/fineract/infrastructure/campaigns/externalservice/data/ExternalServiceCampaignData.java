@@ -41,7 +41,9 @@ public class ExternalServiceCampaignData {
 	private Long savingsProductId;
 	private String savingsProductName;
 	private Collection<LoanProductData> loanProducts;
+	private ExternalServiceCampaignApiKeyData apiKeyData;
 	private Collection<SavingsProductData> savingsProducts;
+	private Collection<ExternalServiceCampaignApiKeyData> apiKeys;
 	private Collection<EmailBusinessRulesData> businessRulesOptions;
 
 	public ExternalServiceCampaignData() {
@@ -65,6 +67,9 @@ public class ExternalServiceCampaignData {
 			this.savingsProductId = campaign.getSavingsProduct().getId();
 			this.savingsProductName = campaign.getSavingsProduct().getName();
 		}
+		if (campaign.getApiKey() != null) {
+			apiKeyData = new ExternalServiceCampaignApiKeyData(campaign.getApiKey());
+		}
 	}
 
 	public void setBusinessRulesOptions(Collection<EmailBusinessRulesData> businessRulesOptions) {
@@ -77,5 +82,9 @@ public class ExternalServiceCampaignData {
 
 	public void setSavingsProducts(Collection<SavingsProductData> savingsProducts) {
 		this.savingsProducts = savingsProducts;
+	}
+
+	public void setApiKeys(Collection<ExternalServiceCampaignApiKeyData> apiKeys) {
+		this.apiKeys = apiKeys;
 	}
 }
