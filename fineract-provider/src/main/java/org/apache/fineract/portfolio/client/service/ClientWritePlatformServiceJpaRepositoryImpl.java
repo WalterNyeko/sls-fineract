@@ -303,7 +303,7 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
                 rollbackTransaction = this.commandProcessingService.validateCommand(commandWrapper, currentUser);
 				this.clientRepository.save(newClient);
             }
-			
+
             if (newClient.isActive()) {
                 this.businessEventNotifierService.notifyBusinessEventWasExecuted(BUSINESS_EVENTS.CLIENTS_ACTIVATE,
                         constructEntityMap(BUSINESS_ENTITY.CLIENT, newClient));

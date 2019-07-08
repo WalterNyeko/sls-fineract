@@ -20,6 +20,7 @@
 package org.apache.fineract.infrastructure.campaigns.externalservice.domain;
 
 import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
+import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
@@ -57,6 +58,10 @@ public class ExternalServiceCampaignLog extends AbstractPersistableCustom<Long> 
 	@ManyToOne
 	@JoinColumn(name = "savings_account_transaction_id")
 	private SavingsAccountTransaction savingsAccountTransaction;
+
+	@ManyToOne
+	@JoinColumn(name = "client_id")
+	private Client client;
 
 	@Column(name = "api_response_status", nullable = false)
 	private Integer apiResponseStatus;
@@ -152,5 +157,13 @@ public class ExternalServiceCampaignLog extends AbstractPersistableCustom<Long> 
 
 	public void setExecutionTime(Date executionTime) {
 		this.executionTime = executionTime;
+	}
+
+	public Client getClient() {
+		return client;
+	}
+
+	public void setClient(Client client) {
+		this.client = client;
 	}
 }

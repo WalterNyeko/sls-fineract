@@ -24,6 +24,7 @@ import org.apache.fineract.infrastructure.campaigns.externalservice.domain.Exter
 import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaignLog;
 import org.apache.fineract.infrastructure.core.domain.FineractPlatformTenant;
 import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
+import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
@@ -44,6 +45,7 @@ public class ExternalServiceExecutor implements Runnable {
 
 	private Loan loan;
 	private int tries;
+	private Client client;
 	private long retryLag;
 	private String payload;
 	private int maximumRetries;
@@ -54,13 +56,15 @@ public class ExternalServiceExecutor implements Runnable {
 	private SavingsAccountTransaction savingsAccountTransaction;
 	private ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository;
 
-	public ExternalServiceExecutor(long retryLag,
+	public ExternalServiceExecutor(Client client,
+								   long retryLag,
 								   String payload,
 								   int maximumRetries,
 								   FineractPlatformTenant tenant,
 								   ExternalServiceCampaign externalServiceCampaign,
 								   ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
 		tries = 1;
+		this.client = client;
 		this.tenant = tenant;
 		this.payload = payload;
 		this.retryLag = retryLag;
@@ -76,7 +80,7 @@ public class ExternalServiceExecutor implements Runnable {
 								   FineractPlatformTenant tenant,
 								   ExternalServiceCampaign externalServiceCampaign,
 								   ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
-		this(retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
+		this(loan.client(), retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
 		this.loan = loan;
 	}
 
@@ -87,7 +91,7 @@ public class ExternalServiceExecutor implements Runnable {
 								   FineractPlatformTenant tenant,
 								   ExternalServiceCampaign externalServiceCampaign,
 								   ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
-		this(retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
+		this(loanTransaction.getLoan().client(), retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
 		this.loanTransaction = loanTransaction;
 	}
 
@@ -98,7 +102,7 @@ public class ExternalServiceExecutor implements Runnable {
 								   FineractPlatformTenant tenant,
 								   ExternalServiceCampaign externalServiceCampaign,
 								   ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
-		this(retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
+		this(savingsAccount.getClient(), retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
 		this.savingsAccount = savingsAccount;
 	}
 
@@ -109,7 +113,7 @@ public class ExternalServiceExecutor implements Runnable {
 								   FineractPlatformTenant tenant,
 								   ExternalServiceCampaign externalServiceCampaign,
 								   ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
-		this(retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
+		this(savingsAccountTransaction.getSavingsAccount().getClient(), retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
 		this.savingsAccountTransaction = savingsAccountTransaction;
 	}
 
@@ -176,6 +180,7 @@ public class ExternalServiceExecutor implements Runnable {
 	private void logExternalServiceCampaignExecution(int status, String apiResponse, String apiResponseError) {
 		ExternalServiceCampaignLog externalServiceCampaignLog = new ExternalServiceCampaignLog();
 		externalServiceCampaignLog.setLoan(this.loan);
+		externalServiceCampaignLog.setClient(this.client);
 		externalServiceCampaignLog.setApiResponse(apiResponse);
 		externalServiceCampaignLog.setApiResponseStatus(status);
 		externalServiceCampaignLog.setExecutionTime(new Date());

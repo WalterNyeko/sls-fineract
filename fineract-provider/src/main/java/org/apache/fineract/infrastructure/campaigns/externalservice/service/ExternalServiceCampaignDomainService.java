@@ -107,8 +107,8 @@ public class ExternalServiceCampaignDomainService {
 		this.businessEventNotifierService.addBusinessEventPostListners(BusinessEventNotificationConstants.BUSINESS_EVENTS.SAVINGS_CREATE, new CallExternalServiceOnSavingsAccountCreated());
 	}
 
-	private void callExternalSystem(ExternalServiceCampaign campaign, String payload) {
-		ExternalServiceExecutor externalServiceExecutor = new ExternalServiceExecutor(configurationDomainService.getExternalServiceCampaignRetryDelay(),
+	private void callExternalSystem(ExternalServiceCampaign campaign, String payload, Client client) {
+		ExternalServiceExecutor externalServiceExecutor = new ExternalServiceExecutor(client, configurationDomainService.getExternalServiceCampaignRetryDelay(),
 				payload, configurationDomainService.getExternalServiceCampaignMaxRetries(), ThreadLocalContextUtil.getTenant(), campaign, this.externalServiceCampaignLogRepository);
 		externalServiceExecutor.start();
 	}
@@ -203,7 +203,7 @@ public class ExternalServiceCampaignDomainService {
 		sql = sql.replace("${clientId}", client.getId().toString());
 		ClientReportData clientReport = this.jdbcTemplate.queryForObject(sql, this.clientReportMapper);
 		String payload = this.replacePlaceholdersInPayload(campaign.getPayload(), clientReport);
-		this.callExternalSystem(campaign, payload);
+		this.callExternalSystem(campaign, payload, client);
 
 	}
 
