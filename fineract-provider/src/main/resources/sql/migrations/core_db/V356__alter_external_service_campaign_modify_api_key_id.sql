@@ -23,4 +23,4 @@ ALTER TABLE `external_service_campaign` DROP COLUMN api_key_id;
 
 ALTER TABLE `external_service_campaign` ADD COLUMN api_key_id BIGINT(20);
 
-ALTER TABLE `external_service_campaign` ADD CONSTRAINT external_service_campaign_to_api_key FOREIGN KEY (api_key_id) REFERENCES external_service_campaign(id);
+ALTER TABLE `external_service_campaign` ADD CONSTRAINT external_service_campaign_to_api_key FOREIGN KEY (api_key_id) REFERENCES external_service_campaign_api_key (id);
