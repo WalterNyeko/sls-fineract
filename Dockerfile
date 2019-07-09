@@ -1,6 +1,5 @@
 FROM tomcat:7.0.91-jre8
 VOLUME /tmp
-RUN ps auxwww | grep -v grep | grep tomcat
 COPY build/libs/fineract-provider.war /usr/local/tomcat/webapps
 COPY server.xml /usr/local/tomcat/conf/server.xml
 COPY drizzle-jdbc-1.3.jar /usr/local/tomcat/lib
