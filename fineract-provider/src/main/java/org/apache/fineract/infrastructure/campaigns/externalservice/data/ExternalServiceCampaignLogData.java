@@ -70,13 +70,8 @@ public class ExternalServiceCampaignLogData {
 		}
 		if (serviceCampaignLog.getSavingsAccountTransaction() != null) {
 			this.transactionId = serviceCampaignLog.getSavingsAccountTransaction().getId();
-			this.loanAccountNumber = serviceCampaignLog.getSavingsAccountTransaction().getSavingsAccount().getNubanAccountNumber();
+			this.savingsAccountNumber = serviceCampaignLog.getSavingsAccountTransaction().getSavingsAccount().getNubanAccountNumber();
 		}
 		this.executionTime = LocalDateTime.fromDateFields(serviceCampaignLog.getExecutionTime());
-//		FineractPlatformTenant tenant = ThreadLocalContextUtil.getTenant();
-//		if (tenant != null) {
-//			final DateTimeZone zone = DateTimeZone.forID(tenant.getTimezoneId());
-//			this.executionTime = LocalDateTime.fromDateFields(this.executionTime.toDate(zone.toTimeZone()));
-//		}
 	}
 }
