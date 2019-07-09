@@ -54,6 +54,7 @@ public class ExternalServiceExecutor implements Runnable {
 	private LoanTransaction loanTransaction;
 	private ExternalServiceCampaign externalServiceCampaign;
 	private SavingsAccountTransaction savingsAccountTransaction;
+	private ExternalServiceCampaignLog externalServiceCampaignLog;
 	private ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository;
 
 	public ExternalServiceExecutor(Client client,
@@ -141,6 +142,7 @@ public class ExternalServiceExecutor implements Runnable {
 			}
 			post.setEntity(input);
 
+			this.logExternalServiceCampaignExecution(100, null, null, "In progress");
 			HttpResponse response = client.execute(post);
 
 			int status = response.getStatusLine().getStatusCode();
@@ -153,15 +155,16 @@ public class ExternalServiceExecutor implements Runnable {
 			System.out.println("RESPONSE STRING: " + line);
 			System.out.println("========================================================================");
 			if (status >= 200 && status < 300) {
-				this.logExternalServiceCampaignExecution(status, line, null);
+				this.logExternalServiceCampaignExecution(status, line, null, "Completed");
 			} else {
 				String error = response.getStatusLine().getReasonPhrase() + ": " + line;
-				this.logExternalServiceCampaignExecution(status, null, error);
+				this.logExternalServiceCampaignExecution(status, null, error, "Failed");
 			}
 		} catch (HttpHostConnectException ex) {
 			if (tries <= this.maximumRetries) {
 				tries += 1;
 				try {
+					this.logExternalServiceCampaignExecution(500, null, ex.getMessage(), "Failed & Retrying");
 					Thread.sleep(this.retryLag);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -169,7 +172,7 @@ public class ExternalServiceExecutor implements Runnable {
 				System.out.println("External Service Campaign Executor retry after timeout " + tries);
 				this.callExternalSystem();
 			} else {
-				this.logExternalServiceCampaignExecution(500, null, ex.getMessage());
+				this.logExternalServiceCampaignExecution(500, null, ex.getMessage(), "Failed");
 			}
 			ex.printStackTrace();
 		} catch (Exception ex) {
@@ -177,18 +180,22 @@ public class ExternalServiceExecutor implements Runnable {
 		}
 	}
 
-	private void logExternalServiceCampaignExecution(int status, String apiResponse, String apiResponseError) {
-		ExternalServiceCampaignLog externalServiceCampaignLog = new ExternalServiceCampaignLog();
-		externalServiceCampaignLog.setLoan(this.loan);
-		externalServiceCampaignLog.setClient(this.client);
+	private void logExternalServiceCampaignExecution(int status, String apiResponse, String apiResponseError, String executionStatus) {
+		if (this.externalServiceCampaignLog == null) {
+			this.externalServiceCampaignLog = new ExternalServiceCampaignLog();
+			externalServiceCampaignLog.setLoan(this.loan);
+			externalServiceCampaignLog.setClient(this.client);
+			externalServiceCampaignLog.setSavingsAccount(this.savingsAccount);
+			externalServiceCampaignLog.setLoanTransaction(this.loanTransaction);
+			externalServiceCampaignLog.setSavingsAccountTransaction(savingsAccountTransaction);
+			externalServiceCampaignLog.setExternalServiceCampaign(this.externalServiceCampaign);
+		}
 		externalServiceCampaignLog.setApiResponse(apiResponse);
 		externalServiceCampaignLog.setApiResponseStatus(status);
 		externalServiceCampaignLog.setExecutionTime(new Date());
+		externalServiceCampaignLog.setNumberOfTries(this.tries - 1);
+		externalServiceCampaignLog.setExecutionStatus(executionStatus);
 		externalServiceCampaignLog.setApiResponseError(apiResponseError);
-		externalServiceCampaignLog.setSavingsAccount(this.savingsAccount);
-		externalServiceCampaignLog.setLoanTransaction(this.loanTransaction);
-		externalServiceCampaignLog.setSavingsAccountTransaction(savingsAccountTransaction);
-		externalServiceCampaignLog.setExternalServiceCampaign(this.externalServiceCampaign);
-		this.externalServiceCampaignLogRepository.save(externalServiceCampaignLog);
+		this.externalServiceCampaignLogRepository.saveAndFlush(externalServiceCampaignLog);
 	}
 }

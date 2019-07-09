@@ -23,11 +23,13 @@ import org.apache.fineract.commands.service.CommandWrapperBuilder;
 import org.apache.fineract.commands.service.PortfolioCommandSourceWritePlatformService;
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignApiKeyData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignData;
+import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignLogData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.service.ExternalServiceCampaignReadPlatformService;
 import org.apache.fineract.infrastructure.core.api.ApiRequestParameterHelper;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.serialization.ApiRequestJsonSerializationSettings;
 import org.apache.fineract.infrastructure.core.serialization.DefaultToApiJsonSerializer;
+import org.apache.fineract.infrastructure.core.service.SearchParameters;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -41,6 +43,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
@@ -63,6 +66,7 @@ public class ExternalServiceCampaignApiResource {
 	private final ExternalServiceCampaignReadPlatformService externalServiceCampaignReadPlatformService;
 
 	private final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService;
+	private final DefaultToApiJsonSerializer<ExternalServiceCampaignLogData> externalServiceCampaignLogDataToApiJsonSerializer;
 	private final DefaultToApiJsonSerializer<ExternalServiceCampaignApiKeyData> externalServiceCampaignApiKeyDataToApiJsonSerializer;
 
 
@@ -72,13 +76,15 @@ public class ExternalServiceCampaignApiResource {
 											  final ApiRequestParameterHelper apiRequestParameterHelper,
 											  final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService,
 											  final DefaultToApiJsonSerializer<ExternalServiceCampaignApiKeyData> externalServiceCampaignApiKeyDataToApiJsonSerializer,
-											  ExternalServiceCampaignReadPlatformService externalServiceCampaignReadPlatformService) {
+											  ExternalServiceCampaignReadPlatformService externalServiceCampaignReadPlatformService,
+											  DefaultToApiJsonSerializer<ExternalServiceCampaignLogData> externalServiceCampaignLogDataToApiJsonSerializer) {
 		this.context = context;
 		this.toApiJsonSerializer = toApiJsonSerializer;
 		this.apiRequestParameterHelper = apiRequestParameterHelper;
 		this.commandsSourceWritePlatformService = commandsSourceWritePlatformService;
 		this.externalServiceCampaignApiKeyDataToApiJsonSerializer = externalServiceCampaignApiKeyDataToApiJsonSerializer;
 		this.externalServiceCampaignReadPlatformService = externalServiceCampaignReadPlatformService;
+		this.externalServiceCampaignLogDataToApiJsonSerializer = externalServiceCampaignLogDataToApiJsonSerializer;
 	}
 
 
@@ -93,10 +99,21 @@ public class ExternalServiceCampaignApiResource {
 
 	@GET
 	@Produces({MediaType.APPLICATION_JSON})
-	public String retrieveAllCampaign(@Context final UriInfo uriInfo) {
+	public String retrieveAllCampaigns(@Context final UriInfo uriInfo) {
 		this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
 		final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
 		return this.toApiJsonSerializer.serialize(settings, this.externalServiceCampaignReadPlatformService.retrieveAll());
+	}
+
+	@GET
+	@Path("logs")
+	@Produces({MediaType.APPLICATION_JSON})
+	public String retrieveAllCampaignLogs(@QueryParam("offset") final Integer offset, @QueryParam("limit") final Integer limit,
+										  @Context final UriInfo uriInfo) {
+		this.context.authenticatedUser().validateHasReadPermission(this.resourceNameForPermissions);
+		SearchParameters searchParameters = SearchParameters.forPagination(offset, limit);
+		final ApiRequestJsonSerializationSettings settings = this.apiRequestParameterHelper.process(uriInfo.getQueryParameters());
+		return this.externalServiceCampaignLogDataToApiJsonSerializer.serialize(settings, this.externalServiceCampaignReadPlatformService.retrieveLogs(searchParameters));
 	}
 
 	@POST

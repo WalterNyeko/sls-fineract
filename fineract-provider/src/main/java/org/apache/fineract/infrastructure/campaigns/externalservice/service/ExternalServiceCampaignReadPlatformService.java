@@ -21,6 +21,10 @@ package org.apache.fineract.infrastructure.campaigns.externalservice.service;
 
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignApiKeyData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignData;
+import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignLogData;
+import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaignLog;
+import org.apache.fineract.infrastructure.core.service.Page;
+import org.apache.fineract.infrastructure.core.service.SearchParameters;
 
 import java.util.List;
 
@@ -35,5 +39,7 @@ public interface ExternalServiceCampaignReadPlatformService {
 	List<ExternalServiceCampaignApiKeyData> retrieveApiKeys();
 
 	ExternalServiceCampaignApiKeyData retrieveApiKeyById(Long id);
+
+	Page<ExternalServiceCampaignLogData> retrieveLogs(SearchParameters searchParameters);
 
 }

@@ -22,7 +22,13 @@ package org.apache.fineract.infrastructure.campaigns.email.domain;
 import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaignLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 
 public interface ExternalServiceCampaignLogRepository extends JpaRepository<ExternalServiceCampaignLog, Long>, JpaSpecificationExecutor<ExternalServiceCampaignLog> {
+
+	@Query("SELECT log FROM ExternalServiceCampaignLog log order by log.executionTime desc")
+	List<ExternalServiceCampaignLog> findAllLogs();
 
 }

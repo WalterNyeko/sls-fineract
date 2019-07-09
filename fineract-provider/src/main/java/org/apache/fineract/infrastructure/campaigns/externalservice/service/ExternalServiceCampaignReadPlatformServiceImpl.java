@@ -19,17 +19,23 @@
 
 package org.apache.fineract.infrastructure.campaigns.externalservice.service;
 
+import org.apache.fineract.infrastructure.campaigns.email.domain.ExternalServiceCampaignApiKeyRepository;
+import org.apache.fineract.infrastructure.campaigns.email.domain.ExternalServiceCampaignLogRepository;
 import org.apache.fineract.infrastructure.campaigns.email.domain.ExternalServiceCampaignRepository;
 import org.apache.fineract.infrastructure.campaigns.email.service.EmailCampaignReadPlatformService;
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignApiKeyData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignData;
+import org.apache.fineract.infrastructure.campaigns.externalservice.data.ExternalServiceCampaignLogData;
 import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaign;
-import org.apache.fineract.infrastructure.campaigns.email.domain.ExternalServiceCampaignApiKeyRepository;
+import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaignLog;
+import org.apache.fineract.infrastructure.core.service.Page;
+import org.apache.fineract.infrastructure.core.service.SearchParameters;
 import org.apache.fineract.portfolio.loanproduct.service.LoanProductReadPlatformService;
 import org.apache.fineract.portfolio.savings.service.SavingsProductReadPlatformService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +46,7 @@ public class ExternalServiceCampaignReadPlatformServiceImpl implements ExternalS
 	private SavingsProductReadPlatformService savingsProductReadPlatformService;
 	private EmailCampaignReadPlatformService emailCampaignReadPlatformService;
 	private ExternalServiceCampaignRepository externalServiceCampaignRepository;
+	private ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository;
 	private ExternalServiceCampaignApiKeyRepository externalServiceCampaignApiKeyRepository;
 
 	@Autowired
@@ -47,11 +54,13 @@ public class ExternalServiceCampaignReadPlatformServiceImpl implements ExternalS
 														  SavingsProductReadPlatformService savingsProductReadPlatformService,
 														  EmailCampaignReadPlatformService emailCampaignReadPlatformService,
 														  ExternalServiceCampaignRepository externalServiceCampaignRepository,
+														  ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository,
 														  ExternalServiceCampaignApiKeyRepository externalServiceCampaignApiKeyRepository) {
 		this.loanProductReadPlatformService = loanProductReadPlatformService;
 		this.savingsProductReadPlatformService = savingsProductReadPlatformService;
 		this.emailCampaignReadPlatformService = emailCampaignReadPlatformService;
 		this.externalServiceCampaignRepository = externalServiceCampaignRepository;
+		this.externalServiceCampaignLogRepository = externalServiceCampaignLogRepository;
 		this.externalServiceCampaignApiKeyRepository = externalServiceCampaignApiKeyRepository;
 	}
 
@@ -81,6 +90,26 @@ public class ExternalServiceCampaignReadPlatformServiceImpl implements ExternalS
 	@Override
 	public ExternalServiceCampaignApiKeyData retrieveApiKeyById(Long id) {
 		return new ExternalServiceCampaignApiKeyData(this.externalServiceCampaignApiKeyRepository.findOne(id));
+	}
+
+	@Override
+	public Page<ExternalServiceCampaignLogData> retrieveLogs(SearchParameters searchParameters) {
+		Page<ExternalServiceCampaignLogData> pageItems;
+		List<ExternalServiceCampaignLog> logs = this.externalServiceCampaignLogRepository.findAllLogs();
+		int totalRecords = logs.size();
+		if (searchParameters != null) {
+			List<ExternalServiceCampaignLogData> filteredLogs = new ArrayList<>();
+			if (searchParameters.getOffset() < totalRecords) {
+				int limit = searchParameters.getLimit() + searchParameters.getOffset() <= totalRecords ? searchParameters.getLimit() + searchParameters.getOffset() : totalRecords;
+				for (int i = searchParameters.getOffset(); i < limit; i++) {
+					filteredLogs.add(new ExternalServiceCampaignLogData(logs.get(i)));
+				}
+			}
+			pageItems = new Page<>(filteredLogs, totalRecords);
+		} else {
+			pageItems = new Page<>(logs.stream().map(log -> new ExternalServiceCampaignLogData(log)).collect(Collectors.toList()), totalRecords);
+		}
+		return pageItems;
 	}
 
 	private void appendTemplate(ExternalServiceCampaignData externalServiceCampaign) {
