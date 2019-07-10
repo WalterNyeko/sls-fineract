@@ -142,7 +142,6 @@ public class ExternalServiceExecutor implements Runnable {
 			}
 			post.setEntity(input);
 
-			this.logExternalServiceCampaignExecution(100, null, null, "In progress");
 			HttpResponse response = client.execute(post);
 
 			int status = response.getStatusLine().getStatusCode();
