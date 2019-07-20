@@ -16,22 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.infrastructure.campaigns.externalservice.service;
 
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
+ALTER TABLE `external_service_campaign` DROP FOREIGN KEY `external_service_campaign_to_api_key`;
 
-public interface ExternalServiceCampaignWritePlatformService {
+ALTER TABLE `external_service_campaign` DROP COLUMN api_key_id;
 
-    CommandProcessingResult create(JsonCommand command);
+ALTER TABLE `external_service_campaign` ADD COLUMN api_key_id BIGINT(20);
 
-    CommandProcessingResult update(Long resourceId, JsonCommand command);
-
-    CommandProcessingResult delete(Long resourceId);
-
-	CommandProcessingResult createApiKey(JsonCommand command);
-
-	CommandProcessingResult updateApiKey(Long resourceId, JsonCommand command);
-
-	CommandProcessingResult deleteApiKey(Long resourceId);
-}
+ALTER TABLE `external_service_campaign` ADD CONSTRAINT external_service_campaign_to_api_key FOREIGN KEY (api_key_id) REFERENCES external_service_campaign_api_key (id);

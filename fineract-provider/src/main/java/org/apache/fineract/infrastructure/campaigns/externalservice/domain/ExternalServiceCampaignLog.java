@@ -20,11 +20,13 @@
 package org.apache.fineract.infrastructure.campaigns.externalservice.domain;
 
 import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
+import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransaction;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -42,21 +44,28 @@ public class ExternalServiceCampaignLog extends AbstractPersistableCustom<Long> 
 	@JoinColumn(name = "external_service_campaign_id", nullable = false)
 	private ExternalServiceCampaign externalServiceCampaign;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "loan_id")
 	private Loan loan;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "savings_account_id")
 	private SavingsAccount savingsAccount;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "loan_transaction_id")
 	private LoanTransaction loanTransaction;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "savings_account_transaction_id")
 	private SavingsAccountTransaction savingsAccountTransaction;
+
+	@Column(name = "execution_status", nullable = false)
+	private String executionStatus;
+
+	@ManyToOne(cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "client_id")
+	private Client client;
 
 	@Column(name = "api_response_status", nullable = false)
 	private Integer apiResponseStatus;
@@ -152,5 +161,21 @@ public class ExternalServiceCampaignLog extends AbstractPersistableCustom<Long> 
 
 	public void setExecutionTime(Date executionTime) {
 		this.executionTime = executionTime;
+	}
+
+	public Client getClient() {
+		return client;
+	}
+
+	public void setClient(Client client) {
+		this.client = client;
+	}
+
+	public String getExecutionStatus() {
+		return executionStatus;
+	}
+
+	public void setExecutionStatus(String executionStatus) {
+		this.executionStatus = executionStatus;
 	}
 }

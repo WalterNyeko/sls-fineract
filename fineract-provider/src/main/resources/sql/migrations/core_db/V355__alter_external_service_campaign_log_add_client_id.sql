@@ -16,22 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.infrastructure.campaigns.externalservice.service;
+ 
+ALTER TABLE `external_service_campaign_log` ADD COLUMN client_id BIGINT(20);
 
-import org.apache.fineract.infrastructure.core.api.JsonCommand;
-import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
-
-public interface ExternalServiceCampaignWritePlatformService {
-
-    CommandProcessingResult create(JsonCommand command);
-
-    CommandProcessingResult update(Long resourceId, JsonCommand command);
-
-    CommandProcessingResult delete(Long resourceId);
-
-	CommandProcessingResult createApiKey(JsonCommand command);
-
-	CommandProcessingResult updateApiKey(Long resourceId, JsonCommand command);
-
-	CommandProcessingResult deleteApiKey(Long resourceId);
-}
+ALTER TABLE `external_service_campaign_log` ADD CONSTRAINT external_service_campaign_log_to_client FOREIGN KEY (client_id) REFERENCES m_client(id) ON DELETE CASCADE;

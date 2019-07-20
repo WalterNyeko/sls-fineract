@@ -22,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.StringUtils;
 import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaign;
+import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaignApiKey;
 import org.apache.fineract.infrastructure.core.data.ApiParameterError;
 import org.apache.fineract.infrastructure.core.data.DataValidatorBuilder;
 import org.apache.fineract.infrastructure.core.exception.InvalidJsonException;
@@ -52,13 +53,16 @@ public class ExternalServiceCampaignValidator {
 	public static final String savingsProductId = "savingsProductId";
 	public static final String localeParamName = "locale";
 	public static final String dateFormatParamName = "dateFormat";
+	public static final String apiKeyIdParamName = "apiKeyId";
+	public static final String apiKeyNameParamName = "apiKeyName";
+	public static final String apiKeyParamName = "apiKey";
 
 
 	private final FromJsonHelper fromApiJsonHelper;
 
 
 	public static final Set<String> supportedParams = new HashSet<String>(Arrays.asList(campaignName, localeParamName, dateFormatParamName,
-			businessRuleId, serviceUrl, payload, specificExecutionDate, loanProductId, savingsProductId));
+			businessRuleId, serviceUrl, payload, specificExecutionDate, loanProductId, savingsProductId, apiKeyIdParamName));
 
 	@Autowired
 	public ExternalServiceCampaignValidator(FromJsonHelper fromApiJsonHelper) {
@@ -97,6 +101,39 @@ public class ExternalServiceCampaignValidator {
 		existingCampaigns.forEach(campaign -> {
 			if (campaign.getCampaignName().equals(campaignName) && !campaign.getId().equals(campaignId)) {
 				baseDataValidator.reset().parameter(ExternalServiceCampaignValidator.campaignName).value(campaignName).failWithCode("campaign.name.should.be.unique", "Campaign name should be unique");
+			}
+		});
+
+		if (!dataValidationErrors.isEmpty()) {
+			throw new PlatformApiDataValidationException(dataValidationErrors);
+		}
+	}
+
+	public void validateApiKey(String json, List<ExternalServiceCampaignApiKey> existingCampaignApiKeys, Long apiKeyId) {
+		if (StringUtils.isBlank(json)) {
+			throw new InvalidJsonException();
+		}
+
+		final Type typeOfMap = new TypeToken<Map<String, Object>>() {
+		}.getType();
+		this.fromApiJsonHelper.checkForUnsupportedParameters(typeOfMap, json, new HashSet<String>(Arrays.asList(apiKeyNameParamName, apiKeyParamName)));
+
+		final JsonElement element = this.fromApiJsonHelper.parse(json);
+
+		final List<ApiParameterError> dataValidationErrors = new ArrayList<ApiParameterError>();
+
+		final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors)
+				.resource(ExternalServiceCampaignValidator.RESOURCE_NAME);
+
+		final String apiKeyName = this.fromApiJsonHelper.extractStringNamed(ExternalServiceCampaignValidator.apiKeyNameParamName, element);
+		baseDataValidator.reset().parameter(ExternalServiceCampaignValidator.apiKeyNameParamName).value(apiKeyName).notBlank().notExceedingLengthOf(250);
+
+		final String apiKey = this.fromApiJsonHelper.extractStringNamed(ExternalServiceCampaignValidator.apiKeyParamName, element);
+		baseDataValidator.reset().parameter(ExternalServiceCampaignValidator.apiKeyParamName).value(apiKey).notBlank().notExceedingLengthOf(250);
+
+		existingCampaignApiKeys.forEach(key -> {
+			if (key.getName().equals(apiKeyName) && !key.getId().equals(apiKeyId)) {
+				baseDataValidator.reset().parameter(ExternalServiceCampaignValidator.apiKeyNameParamName).value(apiKeyName).failWithCode("api.key.name.should.be.unique", "API key name should be unique");
 			}
 		});
 

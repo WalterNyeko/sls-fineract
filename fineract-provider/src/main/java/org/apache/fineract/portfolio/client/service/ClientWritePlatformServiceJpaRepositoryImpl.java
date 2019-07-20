@@ -301,9 +301,9 @@ public class ClientWritePlatformServiceJpaRepositoryImpl implements ClientWriteP
                 runEntityDatatableCheck(newClient.getId());
                 final CommandWrapper commandWrapper = new CommandWrapperBuilder().activateClient(null).build();
                 rollbackTransaction = this.commandProcessingService.validateCommand(commandWrapper, currentUser);
+				this.clientRepository.save(newClient);
             }
-			
-            this.clientRepository.save(newClient);
+
             if (newClient.isActive()) {
                 this.businessEventNotifierService.notifyBusinessEventWasExecuted(BUSINESS_EVENTS.CLIENTS_ACTIVATE,
                         constructEntityMap(BUSINESS_ENTITY.CLIENT, newClient));

@@ -24,6 +24,7 @@ import org.apache.fineract.infrastructure.campaigns.externalservice.domain.Exter
 import org.apache.fineract.infrastructure.campaigns.externalservice.domain.ExternalServiceCampaignLog;
 import org.apache.fineract.infrastructure.core.domain.FineractPlatformTenant;
 import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
+import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
@@ -44,6 +45,7 @@ public class ExternalServiceExecutor implements Runnable {
 
 	private Loan loan;
 	private int tries;
+	private Client client;
 	private long retryLag;
 	private String payload;
 	private int maximumRetries;
@@ -52,15 +54,18 @@ public class ExternalServiceExecutor implements Runnable {
 	private LoanTransaction loanTransaction;
 	private ExternalServiceCampaign externalServiceCampaign;
 	private SavingsAccountTransaction savingsAccountTransaction;
+	private ExternalServiceCampaignLog externalServiceCampaignLog;
 	private ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository;
 
-	public ExternalServiceExecutor(long retryLag,
+	public ExternalServiceExecutor(Client client,
+								   long retryLag,
 								   String payload,
 								   int maximumRetries,
 								   FineractPlatformTenant tenant,
 								   ExternalServiceCampaign externalServiceCampaign,
 								   ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
 		tries = 1;
+		this.client = client;
 		this.tenant = tenant;
 		this.payload = payload;
 		this.retryLag = retryLag;
@@ -76,7 +81,7 @@ public class ExternalServiceExecutor implements Runnable {
 								   FineractPlatformTenant tenant,
 								   ExternalServiceCampaign externalServiceCampaign,
 								   ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
-		this(retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
+		this(loan.client(), retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
 		this.loan = loan;
 	}
 
@@ -87,7 +92,7 @@ public class ExternalServiceExecutor implements Runnable {
 								   FineractPlatformTenant tenant,
 								   ExternalServiceCampaign externalServiceCampaign,
 								   ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
-		this(retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
+		this(loanTransaction.getLoan().client(), retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
 		this.loanTransaction = loanTransaction;
 	}
 
@@ -98,7 +103,7 @@ public class ExternalServiceExecutor implements Runnable {
 								   FineractPlatformTenant tenant,
 								   ExternalServiceCampaign externalServiceCampaign,
 								   ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
-		this(retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
+		this(savingsAccount.getClient(), retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
 		this.savingsAccount = savingsAccount;
 	}
 
@@ -109,7 +114,7 @@ public class ExternalServiceExecutor implements Runnable {
 								   FineractPlatformTenant tenant,
 								   ExternalServiceCampaign externalServiceCampaign,
 								   ExternalServiceCampaignLogRepository externalServiceCampaignLogRepository) {
-		this(retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
+		this(savingsAccountTransaction.getSavingsAccount().getClient(), retryLag, payload, maximumRetries, tenant, externalServiceCampaign, externalServiceCampaignLogRepository);
 		this.savingsAccountTransaction = savingsAccountTransaction;
 	}
 
@@ -132,6 +137,9 @@ public class ExternalServiceExecutor implements Runnable {
 			StringEntity input = new StringEntity(payload, ContentType.APPLICATION_JSON);
 			post.addHeader("accept", ContentType.APPLICATION_JSON.getMimeType());
 			post.addHeader("content-type", ContentType.APPLICATION_JSON.getMimeType());
+			if (this.externalServiceCampaign.getApiKey() != null) {
+				post.addHeader("Authorization", "Basic " + this.externalServiceCampaign.getApiKey().getKey());
+			}
 			post.setEntity(input);
 
 			HttpResponse response = client.execute(post);
@@ -146,15 +154,16 @@ public class ExternalServiceExecutor implements Runnable {
 			System.out.println("RESPONSE STRING: " + line);
 			System.out.println("========================================================================");
 			if (status >= 200 && status < 300) {
-				this.logExternalServiceCampaignExecution(status, line, null);
+				this.logExternalServiceCampaignExecution(status, line, null, "Completed");
 			} else {
 				String error = response.getStatusLine().getReasonPhrase() + ": " + line;
-				this.logExternalServiceCampaignExecution(status, null, error);
+				this.logExternalServiceCampaignExecution(status, null, error, "Failed");
 			}
 		} catch (HttpHostConnectException ex) {
 			if (tries <= this.maximumRetries) {
 				tries += 1;
 				try {
+					this.logExternalServiceCampaignExecution(500, null, ex.getMessage(), "Failed & Retrying");
 					Thread.sleep(this.retryLag);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -162,7 +171,7 @@ public class ExternalServiceExecutor implements Runnable {
 				System.out.println("External Service Campaign Executor retry after timeout " + tries);
 				this.callExternalSystem();
 			} else {
-				this.logExternalServiceCampaignExecution(500, null, ex.getMessage());
+				this.logExternalServiceCampaignExecution(500, null, ex.getMessage(), "Failed");
 			}
 			ex.printStackTrace();
 		} catch (Exception ex) {
@@ -170,17 +179,22 @@ public class ExternalServiceExecutor implements Runnable {
 		}
 	}
 
-	private void logExternalServiceCampaignExecution(int status, String apiResponse, String apiResponseError) {
-		ExternalServiceCampaignLog externalServiceCampaignLog = new ExternalServiceCampaignLog();
-		externalServiceCampaignLog.setLoan(this.loan);
+	private void logExternalServiceCampaignExecution(int status, String apiResponse, String apiResponseError, String executionStatus) {
+		if (this.externalServiceCampaignLog == null) {
+			this.externalServiceCampaignLog = new ExternalServiceCampaignLog();
+			externalServiceCampaignLog.setLoan(this.loan);
+			externalServiceCampaignLog.setClient(this.client);
+			externalServiceCampaignLog.setSavingsAccount(this.savingsAccount);
+			externalServiceCampaignLog.setLoanTransaction(this.loanTransaction);
+			externalServiceCampaignLog.setSavingsAccountTransaction(savingsAccountTransaction);
+			externalServiceCampaignLog.setExternalServiceCampaign(this.externalServiceCampaign);
+		}
 		externalServiceCampaignLog.setApiResponse(apiResponse);
 		externalServiceCampaignLog.setApiResponseStatus(status);
 		externalServiceCampaignLog.setExecutionTime(new Date());
+		externalServiceCampaignLog.setNumberOfTries(this.tries - 1);
+		externalServiceCampaignLog.setExecutionStatus(executionStatus);
 		externalServiceCampaignLog.setApiResponseError(apiResponseError);
-		externalServiceCampaignLog.setSavingsAccount(this.savingsAccount);
-		externalServiceCampaignLog.setLoanTransaction(this.loanTransaction);
-		externalServiceCampaignLog.setSavingsAccountTransaction(savingsAccountTransaction);
-		externalServiceCampaignLog.setExternalServiceCampaign(this.externalServiceCampaign);
-		this.externalServiceCampaignLogRepository.save(externalServiceCampaignLog);
+		this.externalServiceCampaignLogRepository.saveAndFlush(externalServiceCampaignLog);
 	}
 }
