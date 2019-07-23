@@ -259,7 +259,7 @@ task dist(type:Zip){
         include '**/*'
 		into('apps')
 	}
-    from('src/main/pentahoReports/') {
+    from('src/main/resources/pentahoReports/') {
         fileMode = 0755
         include '*'
         into('pentahoReports')
@@ -269,7 +269,7 @@ task dist(type:Zip){
         include '*'
         into('api-docs')
     }
-    from('src/main/pentahoReports/') {
+    from('src/main/resources/pentahoReports/') {
         fileMode = 0755
         include '*'
         into('pentahoReports')
@@ -292,7 +292,7 @@ task dist(type:Zip){
 task deployPentahoReports() {
     def pentahoReportDir = System.properties['user.home'] + System.properties['file.separator'] + '.mifosx' + System.properties['file.separator'] + 'pentahoReports'
     copy {
-        from "src/main/pentahoReports"
+        from "src/main/resources/pentahoReports"
         into pentahoReportDir
     }
 

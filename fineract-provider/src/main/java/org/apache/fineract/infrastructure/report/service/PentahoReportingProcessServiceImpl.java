@@ -63,7 +63,6 @@ import java.util.Set;
 public class PentahoReportingProcessServiceImpl implements ReportingProcessService {
 
 	private final static Logger logger = LoggerFactory.getLogger(PentahoReportingProcessServiceImpl.class);
-	public static final String MIFOS_BASE_DIR = System.getProperty("user.home") + File.separator + ".mifosx";
 
 	private final PlatformSecurityContext context;
 	private boolean noPentaho = false;
@@ -103,7 +102,7 @@ public class PentahoReportingProcessServiceImpl implements ReportingProcessServi
 					"Pentaho is not enabled");
 		}
 
-		final String reportPath = MIFOS_BASE_DIR + File.separator + "pentahoReports" + File.separator + reportName + ".prpt";
+		final String reportPath = this.getClass().getClassLoader().getResource("pentahoReports").getPath() + reportName + ".prpt";
 		logger.info("Report path: " + reportPath);
 
 		// load report definition
@@ -178,10 +177,10 @@ public class PentahoReportingProcessServiceImpl implements ReportingProcessServi
              */
 			for (final ParameterDefinitionEntry paramDefEntry : paramsDefinition.getParameterDefinitions()) {
 				final String paramName = paramDefEntry.getName();
+				final String pValue = queryParams.get(paramName);
 				if (!((paramName.equals("tenantUrl")) || (paramName.equals("userhierarchy") || (paramName.equals("username")) || (paramName
-						.equals("password") || (paramName.equals("userid")))))) {
+						.equals("password") || (paramName.equals("userid")))) || (StringUtils.isBlank(pValue) && (paramName.equals("startDate") || paramName.equals("endDate"))))) {
 					logger.info("paramName:" + paramName);
-					final String pValue = queryParams.get(paramName);
 					if (StringUtils.isBlank(pValue)) {
 						throw new PlatformDataIntegrityException("error.msg.reporting.error",
 								"Pentaho Parameter: " + paramName + " - not Provided");
@@ -199,7 +198,6 @@ public class PentahoReportingProcessServiceImpl implements ReportingProcessServi
 						rptParamValues.put(paramName, pValue);
 					}
 				}
-
 			}
 
 			// tenant database name and current user's office hierarchy
