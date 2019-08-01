@@ -111,8 +111,6 @@ final public class ClientData implements Comparable<ClientData> {
 
 	private final List<DatatableData> datatables;
 
-	private List<LoanAccountData> clientLoans = new ArrayList<>();
-
 	//import fields
 	private transient Integer rowIndex;
 	private String dateFormat;
@@ -612,13 +610,5 @@ final public class ClientData implements Comparable<ClientData> {
 
 	public Boolean getIsAddressEnabled() {
 		return this.isAddressEnabled;
-	}
-
-	public List<LoanAccountData> getClientLoans() {
-		return clientLoans;
-	}
-
-	public void setClientLoans(List<LoanAccountData> clientLoans) {
-		this.clientLoans = clientLoans;
 	}
 }
