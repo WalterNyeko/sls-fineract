@@ -108,14 +108,14 @@ public class ClientEntityImportHandler implements ImportHandler {
         Long mainBusinessId = null;
         if (mainBusinessLine!=null) {
             String mainBusinessLineAr[] = ImportHandlerUtils.readAsString(ClientEntityConstants.MAIN_BUSINESS_LINE, row).split("-");
-            if (mainBusinessLineAr[1] != null)
+            if (mainBusinessLineAr.length > 1)
                 mainBusinessId = Long.parseLong(mainBusinessLineAr[1]);
         }
         String constitution= ImportHandlerUtils.readAsString(ClientEntityConstants.CONSTITUTION_COL,row);
         Long constitutionId = null;
         if (constitution!=null) {
             String constitutionAr[] = constitution.split("-");
-            if (constitutionAr[1] != null)
+            if (constitutionAr.length > 1)
                 constitutionId = Long.parseLong(constitutionAr[1]);
         }
         String remarks = ImportHandlerUtils.readAsString(ClientEntityConstants.REMARKS_COL, row);
